@@ -195,10 +195,21 @@ If Taste Skill helps you, consider sponsoring:
 
 [Sponsor on GitHub](https://github.com/sponsors/Leonxlnx)
 
+### Open Source Supporters
+
+<table align="center">
+  <tr>
+    <td align="center" width="104"><a href="https://www.kimi.com"><img src="assets/sponsors/kimi-icon.png" alt="Kimi" width="52" height="52" /></a></td>
+    <td><a href="https://www.kimi.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://kimi-file.moonshot.cn/prod-chat-kimi/kfs/4/1/2026-06-05/1d8h69mt3v89kkekg24gg" /><img alt="Kimi Open Source Friends" src="https://kimi-file.moonshot.cn/prod-chat-kimi/kfs/4/1/2026-06-05/1d8h69fudcmosb3pipls0" height="42" /></picture></a></td>
+  </tr>
+  <tr>
+    <td align="center" width="104"><a href="https://vercel.com/open-source-program"><img src="assets/sponsors/vercel-logo.svg" alt="Vercel" width="52" height="52" /></a></td>
+    <td><a href="https://vercel.com/open-source-program"><img src="assets/vercel-oss-program-badge.svg" alt="Vercel Open Source Program" height="28" /></a></td>
+  </tr>
+</table>
+
 ### Community Sponsors
 
-<a href="https://www.kimi.com"><img src="assets/sponsors/kimi-icon.png" width="40" height="40" alt="Kimi Open Source Friends" title="Kimi Open Source Friends" /></a>
-<a href="https://vercel.com/open-source-program"><img src="assets/sponsors/vercel-logo.svg" width="40" height="40" alt="Vercel Open Source Program" title="Vercel Open Source Program" /></a>
 <a href="https://github.com/dnakov"><img src="https://github.com/dnakov.png" width="40" height="40" style="border-radius:50%" alt="dnakov" title="dnakov" /></a>
 <a href="https://github.com/AkramReshad"><img src="https://github.com/AkramReshad.png" width="40" height="40" style="border-radius:50%" alt="AkramReshad" title="AkramReshad" /></a>
 <a href="https://github.com/ajmalaksar25"><img src="https://github.com/ajmalaksar25.png" width="40" height="40" style="border-radius:50%" alt="ajmalaksar25" title="ajmalaksar25" /></a>
