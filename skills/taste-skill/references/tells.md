@@ -44,7 +44,7 @@ inspector fails the page; **warned** means it flags it and you need a reason.
 | Bento grid of rounded tiles as the feature section | warned as card rows | A composed section; tiles only in the dense-tiles direction, filled, strict sizes |
 | Near-black ground with one neon accent and a glow | banned via shadow, gradient | A dealt dark palette, no glow |
 | Floating rounded pill navigation with blur | warned | A plain bar |
-| Fake dashboard hero built from grey bars and donut charts | no rule; see imagery.md §6 | A real interface fragment, or no image |
+| Fake dashboard hero built from grey bars and donut charts | no rule; see imagery.md §7 | A real interface fragment, or no image |
 | Decorative status dot ("Available for work", pulsing "live") | lint: bounce | Remove |
 | Fade-and-rise on every section | no rule; see motion.md | One signature move |
 

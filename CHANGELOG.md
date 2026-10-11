@@ -17,20 +17,26 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ## v2 - the new default for `taste-skill`
 
-v2 is not an edit of the earlier files. It is a new skill built from a study of 247 curated sites (One Page Love and Awwwards Sites of the Day), and it is a folder, not a single `SKILL.md`: instructions, nine reference files, a library and three zero-dependency scripts.
+v2 is not an edit of the earlier files. It is a new skill built from a study of 247 curated sites (One Page Love and Awwwards Sites of the Day), and it is a folder, not a single `SKILL.md`: instructions, nine reference files, a library and four zero-dependency scripts.
 
 ### How it works
 
 1. **Inventory.** Before any design, the agent lists what only this client has: the name and what it means, the street, the numbers, the one constraint.
 2. **Draw.** `scripts/draw.mjs` deals three of 20 researched directions; the agent picks the one that can carry something from the inventory, and the script deals the rest from the library (48 hero compositions, 172 section compositions, 44 type systems of free fonts, 56 palettes, 420 photographs, 11 motions, 181 studied reference sites). Under every dealt blueprint it prints where that blueprint disagrees with the house rules.
 3. **Idea and one live thing.** One sentence tying the client's own material to the direction's device, checked against the nearest competitor, plus one thing the visitor can do on the page.
-4. **Build** with full content; when there are no photographs, the subject is drawn in code.
+4. **Build** with full content; when there are no photographs of its own, real pictures of the subject's world come from open collections (`scripts/assets.mjs`), and only what no honest picture exists of is drawn in code.
 5. **Gate.** `scripts/lint.mjs` scans the source; `scripts/inspect.mjs` opens the page in a real browser at 1440 / 768 / 390, measures it and fails it on: eyebrow labels, monospace outside code, 01/02/03 numbering, hairlines and outlined boxes, gradients, resting shadows, cream-and-terracotta or violet palettes, headlines over two lines, text under 13px, no focal point on the first screen, near-empty screens, text covered or cut off, sideways overflow.
 6. **Look.** The agent critiques its own screenshots with an Awwwards-weighted rubric and fixes the top three problems, up to three rounds.
 
+### Real pictures from open collections
+
+Agents with no photographs used to draw everything in SVG. `scripts/assets.mjs` searches Openverse, Wikimedia Commons, the Art Institute of Chicago and The Metropolitan Museum of Art without API keys and prints, for each find, a direct image URL, the source page, its size, creator, licence and a one-line credit. By default it keeps only licences that allow commercial use (CC0, public domain, CC BY, CC BY-SA) and checks that every image it prints loads; `--source`, `--license`, `--orientation` and `--min-width` narrow the search. `--get <ref>` downloads a picture into the project's `assets/` and records its credit in `assets/credits.json`; `--credits` prints the footer credit line and the list for the report.
+
+The imagery order is now: the project's own; generated; **real pictures of the subject's world found in open collections** (its street in old postcards, old maps, its materials, engravings of its trade, museum objects of its kind); drawn in code, for what no honest picture exists of; the dealt atmosphere photographs; type and colour alone. A found picture is never presented as the client's own product, room, dish, person or team, and every one is credited on the page and listed in the report. The direction sheet suggests first queries built from the brief (`"ghent postcard"`, `"ghent old map"`), and `references/imagery.md` §3 covers what to search for, what makes a good find, creative uses and the licences.
+
 ### Requirements
 
-Node 22+ and an installed Chrome, Edge or Chromium for the inspector (nothing is installed; it drives the browser over the DevTools protocol). `draw.mjs` and `lint.mjs` run on Node 18+. Working files go to `.taste-skill/` in the project; the draw history lives in `~/.taste-skill/history.json`.
+Node 22+ and an installed Chrome, Edge or Chromium for the inspector (nothing is installed; it drives the browser over the DevTools protocol). `draw.mjs`, `lint.mjs` and `assets.mjs` run on Node 18+; `assets.mjs` needs network access and no API keys. Working files go to `.taste-skill/` in the project; the draw history lives in `~/.taste-skill/history.json`.
 
 ### How it was tested
 
@@ -38,7 +44,7 @@ Five rounds of blind comparisons on six briefs: a fresh agent built each page wi
 
 ### Cost
 
-A full run with the look-and-fix loop takes an agent roughly 30 to 45 minutes and a few hundred thousand tokens, most of it drawing pictures when a project has no photographs.
+A full run with the look-and-fix loop takes an agent roughly 30 to 45 minutes and a few hundred thousand tokens, most of it finding or drawing pictures when a project has no photographs.
 
 ---
 

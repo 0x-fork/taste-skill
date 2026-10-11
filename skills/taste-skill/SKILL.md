@@ -24,12 +24,12 @@ This skill replaces those defaults with decisions, in four ways:
 One warning learned in testing. Taking the ornaments away is only half the job; a page that has lost its
 labels, rules and cards and gained nothing in their place reads as thin, and blind jurors rightly prefer
 a richer page with tells over an empty page without them. The other half is substance: type set
-larger, whole fields of colour, pictures made for this subject, and every section carrying its full
-content. The skill is built to give you that; do not trade it for restraint.
+larger, whole fields of colour, real pictures of this subject's world (found or drawn), and every
+section carrying its full content. The skill is built to give you that; do not trade it for restraint.
 
 In the commands below `<skill>` is this skill's folder. Run them from the project's root, so the
 working files land in `.taste-skill/` there. The scripts need Node 22+ and an installed Chrome, Edge
-or Chromium, and install nothing.
+or Chromium, and install nothing. `assets.mjs` also needs network access; it uses no API keys.
 
 ## The run
 
@@ -40,7 +40,9 @@ Do these in order. Steps 1–5 take a few minutes and decide whether the page is
 Find out what is real: the subject, the audience, the one thing the page must get someone to do, the
 stack, any existing brand (colours, fonts, logo), and above all **what imagery truly exists**: the
 project's own photographs or product shots, a real interface that can be shown, an image generation
-tool you can call, or nothing. Do not plan around pictures you do not have.
+tool you can call, or nothing. Do not plan around pictures you do not have. Nothing of its own is
+rarely nothing at all: the subject's city, street, materials and history are in open archives and
+museums, free to use with a credit (step 6, `scripts/assets.mjs`).
 
 If the request is vague, decide and state your reading in one line instead of asking. Ask only when a
 missing fact blocks the work (for example, no product name).
@@ -54,7 +56,8 @@ appointment); its materials and colours; its rituals and hours (the oven lit at 
 seven); the printed things of its world (a timetable, a label, a ticket, a sign). This list is where
 the idea comes from in step 4. In blind tests, the page that won each brief was built from an item on
 such a list (the client's name and what it means, the street it stands in, the one constraint that
-makes it what it is), and the pages that lost had a good composition with a category idea.
+makes it what it is), and the pages that lost had a good composition with a category idea. The list
+is also your picture search: each place, material and printed thing on it is a query for step 6.
 
 ### 2. Write the argument
 
@@ -90,7 +93,8 @@ node <skill>/scripts/draw.mjs <the same arguments, without --options> --directio
   that can make them), `product-ui` (real screenshots), `illustration`, `video`. Leave it out if you
   have none: the draw then avoids compositions that depend on them and the sheet says how to fill
   picture slots honestly (software shows its own interface built in HTML; a product with no photographs
-  uses shape, type and atmosphere, never a fake product shot).
+  is drawn and set among real pictures of its world, never a fake product shot). Pictures you will
+  find in the open collections are not the project's own; leave them out of `--have`.
 - `--keep palette,type`: when the brand already fixes colours or typefaces. The draw then deals only
   the composition, and you map the brand's values onto the roles.
 
@@ -186,12 +190,28 @@ not finished. Order of work:
    subject. Neighbouring sections must not share a layout. **Carry the idea into every section,**
    pricing, FAQ and footer included: the commonest failure in the study, even among good sites, is a
    distinctive first screen followed by stock blocks.
-4. **Imagery,** in this order of preference: the project's own; generated, if you have a tool;
-   **drawn in code from the subject itself** (its objects, its tiles, its windows, its map, its
-   product's interface, made as one consistent flat graphic language in the palette's real colours);
-   the photographs dealt on the sheet, only where an honestly generic picture fits (the sea for a sea
-   house), never as a stand-in for the subject; type and colour alone. `references/imagery.md` covers
-   drawing, crops and treatments.
+4. **Imagery,** in this order of preference:
+   1. the project's own;
+   2. generated, if you have an image tool;
+   3. **real pictures of the subject's world from the open collections,** whenever an honest one
+      exists. Search them with `node <skill>/scripts/assets.mjs "<query>"` (Openverse, Wikimedia
+      Commons, the Art Institute of Chicago and the Met; only licences that allow commercial use, by
+      default). Search the inventory, not the category: its street in old postcards, an old map of the
+      neighbourhood, its material up close, its trade in engravings, a museum object of its kind, a
+      botanical plate, a star chart. Use them large and with intent: one archival photograph as the
+      hero, an engraving enlarged into the page's motif, the real map of the street as the contact
+      section. Look at each before choosing; `--get <ref>` downloads it into `assets/` and records
+      its source and licence, and `--credits` prints the credit line for the footer. A found picture
+      shows the world around the client and is never presented as the client's own product, room,
+      dish, person or team;
+   4. **drawn in code from the subject itself,** for what no honest picture exists of (its objects,
+      its tiles, its windows, its product's interface, made as one consistent flat graphic language in
+      the palette's real colours);
+   5. the photographs dealt on the sheet, only where an honestly generic picture fits (the sea for a
+      sea house), never as a stand-in for the subject;
+   6. type and colour alone.
+
+   `references/imagery.md` covers searching, licences and credits, drawing, crops and treatments.
 5. **The live thing** from step 4, built into the section where it proves the claim (often the hero
    or the booking), with real content, a thumb-sized phone version and a plain fallback.
 6. **Fullness.** Look at each desktop screen as a poster: one dominant thing and the content it
@@ -240,9 +260,11 @@ once more and check every screenshot for content that failed to appear.
 ### 10. Report
 
 Tell the user, briefly: the direction dealt (name and seed) and any redraws with reasons; the idea
-sentence and the live thing; the final scores from your last critique round and what still falls short; which bundled
-photographs are in use (so they can be replaced) and any sample content that must be swapped before
-launch. Do not claim a check you did not run.
+sentence and the live thing; the final scores from your last critique round and what still falls short;
+every found picture with its title, creator, licence and source page (`assets.mjs --credits` prints
+the list) and where its credit sits on the page; which bundled photographs and which drawings stand in
+for photography (so they can be replaced); and any sample content that must be swapped before launch.
+Do not claim a check you did not run.
 
 ## House rules
 
@@ -269,7 +291,7 @@ These hold on every build, whatever the direction. `inspect.mjs` measures them.
 Three places keep their own conventions and are left alone by the inspector: real code in
 `<pre>`/`<code>` (monospace is correct there), real tables and form fields (they may have lines), and
 a real interface fragment whose root carries the attribute `data-ui` (the product's own borders and
-menus; see `references/imagery.md` §6).
+menus; see `references/imagery.md` §7).
 
 Why these, honestly. Some are what the study measured: among the 247 sites, those the panel scored
 7.5 or higher used icon feature cards 1% of the time against 28% for sites under 6.5, pill badges 14%
@@ -315,7 +337,10 @@ Short form. Numbers are from the study unless marked as house style.
 - Same crop ratios, same treatment, square corners unless the direction says otherwise (73% of the
   studied sites leave media square).
 - No image is better than a placeholder, an icon, or an abstract shape. A picture drawn for this
-  subject, in its colours and with care, is better than either.
+  subject, in its colours and with care, is better than either. A real picture of its world, found
+  and credited, is better still.
+- Every found picture is downloaded into the project, credited on the page and listed in the report.
+  None is presented as the client's own.
 - Nothing ever lies on top of a headline or a statement (the inspector fails it).
 
 **Components**
@@ -347,6 +372,9 @@ launch. Never fake a payment form.
 **No Chrome or Node 22.** Run `lint.mjs` (Node 18+), take screenshots with whatever browser tool you
 have, and critique those. Say in the report that the inspector could not run.
 
+**No network.** If `assets.mjs` reaches no source, draw the pictures and say in the report that the
+open collections could not be searched.
+
 ## Files
 
 | File | Read it when |
@@ -355,12 +383,13 @@ have, and critique those. Say in the report that the inspector could not run.
 | `references/type.md` | Setting type: scales, tracking, measure, loading fonts, pairing. |
 | `references/colour.md` | Applying the palette: roles, proportions, tone steps, dark pages, contrast. |
 | `references/layout.md` | Grid, margins, rhythm, section variety, navigation, footer, the phone composition. |
-| `references/imagery.md` | Choosing, cropping and treating pictures; what to do with none. |
+| `references/imagery.md` | Choosing, finding, crediting, cropping and treating pictures; what to do with none. |
 | `references/motion.md` | Step 9. Budget, tokens, recipes, reduced motion. |
 | `references/critique.md` | Step 8. How to look, how to score, what to fix first. |
 | `references/tells.md` | The dated registry of generated-page tells and what each is replaced by. |
 | `references/research.md` | The study: method, numbers, what the best and worst sites do. Cite it, do not guess. |
 | `scripts/draw.mjs` | Deals and reprints the direction; `--photos`, `--site <id>` for more references. |
+| `scripts/assets.mjs` | Step 6: searches open collections for real pictures of the subject's world; `--get` downloads with the credit, `--credits` prints them. |
 | `scripts/lint.mjs` · `scripts/inspect.mjs` | The gate. |
 | `assets/base.css` · `assets/base.js` | An optional neutral foundation to build on. |
 | `library/` | The data the draw reads: directions, heroes, sections, type systems, palettes, photographs, studied sites, motions. Do not read it whole; use the script. |
