@@ -3,6 +3,7 @@
 # Local skill registry
 declare -A SKILLS=(
   [taste-skill]="skills/taste-skill/SKILL.md"
+  [taste-skill-v2-experimental]="skills/taste-skill-v2-experimental/SKILL.md"
   [taste-skill-v1]="skills/taste-skill-v1/SKILL.md"
   [gpt-taste]="skills/gpt-tasteskill/SKILL.md"
   [image-to-code-skill]="skills/image-to-code-skill/SKILL.md"
