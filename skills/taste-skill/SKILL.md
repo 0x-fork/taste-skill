@@ -211,7 +211,14 @@ not finished. Order of work:
       sea house), never as a stand-in for the subject;
    6. type and colour alone.
 
-   `references/imagery.md` covers searching, licences and credits, drawing, crops and treatments.
+   **The floor, which the inspector checks:** at least four real pictures on the page, usually six to
+   twelve (photographs, archival images, maps, engravings, footage, raster artwork; for software, its
+   cropped interface fragments count too). SVG drawings do not count toward the floor: draw what no
+   picture exists of, and still carry real pictures. Add one moving picture wherever an honest clip
+   exists: search it with `assets.mjs --video "<query>"` and use it as a muted loop with a poster
+   frame. Models skip pictures and footage because finding them is work; the page fails without them.
+
+   `references/imagery.md` covers searching, licences and credits, video, drawing, crops and treatments.
 5. **The live thing** from step 4, built into the section where it proves the claim (often the hero
    or the booking), with real content, a thumb-sized phone version and a plain fallback.
 6. **Fullness.** Look at each desktop screen as a poster: one dominant thing and the content it
@@ -251,17 +258,29 @@ Judge only the pictures. If a problem is visible in a screenshot, it is real, wh
 
 ### 9. Move
 
-Only now add motion: the single signature move named on the sheet, plus press, hover and focus
-feedback. One exception: a move that changes the colour or the layout of whole screens (colour by
-chapter, a pinned story) is part of the composition, so build it in step 6 and let every look round
-see it. `references/motion.md` has the budget, the tokens and tested recipes. Then run the inspector
-once more and check every screenshot for content that failed to appear.
+Now build the motion layer. It is required, and it is more than one fade: the inspector counts the
+elements that really move while the page loads and is scrolled, and fails a page under eight (it warns
+under sixteen). The layer has four parts:
+
+1. **The signature move** named on the sheet: one, done well.
+2. **An entrance for the parts of every section:** the heading, then the text, then the picture,
+   staggered by 60–90ms, rising 16–32px with opacity, triggered once as the section enters. Not one
+   fade for the whole block, and never content that stays hidden if the script fails.
+3. **Feedback on every control:** press, hover and focus on buttons, links, cards and the live thing.
+4. **One moving picture:** a found clip as a muted loop, a slow scale or drift on a photograph, or a
+   scroll-linked move on the hero picture.
+
+Transform and opacity only; every move has a `prefers-reduced-motion` fallback that keeps the content
+and drops the travel. A move that changes the colour or the layout of whole screens (colour by
+chapter, a pinned story) is part of the composition, so build it in step 6 and let every look round see
+it. `references/motion.md` has the tokens and tested recipes. Then run the inspector once more and check
+every screenshot for content that failed to appear.
 
 ### 10. Report
 
 Tell the user, briefly: the direction dealt (name and seed) and any redraws with reasons; the idea
 sentence and the live thing; the final scores from your last critique round and what still falls short;
-every found picture with its title, creator, licence and source page (`assets.mjs --credits` prints
+every found picture and clip with its title, creator, licence and source page (`assets.mjs --credits` prints
 the list) and where its credit sits on the page; which bundled photographs and which drawings stand in
 for photography (so they can be replaced); and any sample content that must be swapped before launch.
 Do not claim a check you did not run.

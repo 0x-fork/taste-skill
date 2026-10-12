@@ -34,6 +34,16 @@ Agents with no photographs used to draw everything in SVG. `scripts/assets.mjs` 
 
 The imagery order is now: the project's own; generated; **real pictures of the subject's world found in open collections** (its street in old postcards, old maps, its materials, engravings of its trade, museum objects of its kind); drawn in code, for what no honest picture exists of; the dealt atmosphere photographs; type and colour alone. A found picture is never presented as the client's own product, room, dish, person or team, and every one is credited on the page and listed in the report. The direction sheet suggests first queries built from the brief (`"ghent postcard"`, `"ghent old map"`), and `references/imagery.md` §3 covers what to search for, what makes a good find, creative uses and the licences.
 
+### Pictures, footage and motion are required
+
+Testing showed agents skip pictures and motion when nothing forces them: ten pages built with the first v2 carried no real pictures at all and almost no motion. The inspector now enforces both:
+
+- `few-pictures` (fail): fewer than four real pictures on the page (photographs, archival images, footage, raster artwork; for software, cropped interface fragments). SVG drawings do not count. `no-real-pictures` and `no-footage` warn when a page has fewer than two real photographs or no video.
+- `still-page` (fail under 8, warn under 16): counts the distinct elements that actually move while the page loads and is scrolled, from CSS animations, transitions, Web Animations and script-driven transforms.
+- `assets.mjs --video` finds open-licence footage (Wikimedia Commons, the Internet Archive, NASA) for a muted looping clip.
+
+The motion guidance changed with it: one loud signature move, plus a choreographed entrance for the parts of every section, feedback on every control, and one moving picture. The old "one moment and nothing else" budget is gone; identical fade-ups on every block are still banned.
+
 ### Requirements
 
 Node 22+ and an installed Chrome, Edge or Chromium for the inspector (nothing is installed; it drives the browser over the DevTools protocol). `draw.mjs`, `lint.mjs` and `assets.mjs` run on Node 18+; `assets.mjs` needs network access and no API keys. Working files go to `.taste-skill/` in the project; the draw history lives in `~/.taste-skill/history.json`.

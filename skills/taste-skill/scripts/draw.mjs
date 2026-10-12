@@ -477,6 +477,7 @@ function render(s) {
     own: '**Use the images that belong to the project in every picture slot.** For slots they cannot fill, real pictures of the subject\'s world from the open collections come next (start with ' + find + '; credit them on the page), then the dealt photographs.',
   };
   p(MODE[s.imagery || 'atmosphere']); p(); p(d.imagery);
+  p(); p('**Floor (the inspector checks it):** at least four real pictures on the page, usually six to twelve; SVG drawings do not count. One moving picture where an honest clip exists: `node <skill>/scripts/assets.mjs --video "<query>"`, used as a muted loop with a poster frame. Whatever this direction says about pictures, it is carried out with real ones.');
   if (s.photos) {
     p();
     p(s.imagery === 'interface' ? `Optional atmosphere, two at most, from the "${s.photos.title || s.photos.set}" set (${s.photos.note}). The page does not need them.` : `Photographs dealt for this build, from the "${s.photos.title || s.photos.set}" set (${s.photos.note})`);
@@ -491,7 +492,7 @@ function render(s) {
     p('add `?grayscale` to desaturate. ' + (s.imagery === 'interface' ? 'Use at most two.' : 'Use three to six of them, not all eight.') + ' Always set `width`, `height`, `alt` and `loading="lazy"` (not on the hero image).');
     if (s.photos.others?.length) p(`Other sets that fit this brief: ${s.photos.others.join(', ')} — \`node draw.mjs --photos <set>\` prints one in full; \`--photos list\` shows all sets. Taking photographs from another set is your call and is not a redraw; keep them to one light and one treatment.`);
   } else if (d.photos === false) {
-    p(); p('This direction uses no photographs. Do not add any.');
+    p(); p('This direction does not lead with photographs; it still carries the picture floor below, with real pictures placed where the direction allows them.');
   }
   p();
   const adjust = (bp) => { const n = adjustments(bp, s); if (n.length) { p(); p('Adjusted for this page:'); for (const x of n) p(`- ${x}`); } };
@@ -505,7 +506,7 @@ function render(s) {
     p(`### ${i + 1}. ${sec.role} — ${sec.name} (${sec.shape})`); p(sec.blueprint); if (sec.mobile) p(`On a phone: ${sec.mobile}`); adjust(sec);
   });
   p();
-  if (s.motion) { p(`## 8. Motion — ${s.motion.name}`); p(s.motion.description); p('Recipes and limits: references/motion.md. This is the only showpiece; everything else is quiet feedback.'); p(); }
+  if (s.motion) { p(`## 8. Motion — ${s.motion.name}`); p(s.motion.description); p('This is the signature move, the one loud moment. Around it the page still needs the rest of the motion layer (SKILL.md step 9): an entrance for the parts of every section, feedback on every control, and one moving picture. The inspector fails a page that barely moves. Recipes: references/motion.md.'); p(); }
   if (d.richness) { p('## 9. Where the richness comes from'); p(d.richness); p(); }
   if (d.pitfalls) { p('## 10. How this direction goes wrong'); p(d.pitfalls); p(); }
   if (s.references?.length) {

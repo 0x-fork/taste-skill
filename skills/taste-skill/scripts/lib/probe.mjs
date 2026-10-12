@@ -399,6 +399,23 @@ export function probe() {
   // data-ui is for cropped interface fragments, not for wrapping the page
   const uiAbuse = [...document.querySelectorAll('[data-ui]')].some((el) => el.querySelector('h1') || el.getBoundingClientRect().height > H * 1.6 || el === document.body);
   const uiFragments = document.querySelectorAll('[data-ui]').length;
+  // pictures that were not drawn by the page's own code: photographs, footage, raster artwork.
+  // Inline SVG and .svg files do not count; cropped interface fragments (data-ui) are counted apart.
+  const svgSrc = (u) => /\.svg(\?|#|$)|^data:image\/svg/i.test(u || '');
+  let realPictures = 0, videoCount = 0; const pictureSamples = [];
+  for (const el of all) {
+    if (el.closest('[data-ui]') || el.closest('svg')) continue;
+    const r = el.getBoundingClientRect(); if (r.width < 120 || r.height < 90 || r.width * r.height < 160 * 120) continue;
+    if (el.tagName === 'IMG') {
+      const src = el.currentSrc || el.src;
+      if (el.naturalWidth > 0 && !svgSrc(src)) { realPictures++; if (pictureSamples.length < 8) pictureSamples.push(src.split('/').pop().slice(0, 48)); }
+      continue;
+    }
+    if (el.tagName === 'VIDEO') { realPictures++; videoCount++; continue; }
+    const bg = getComputedStyle(el).backgroundImage;
+    if (bg && bg.includes('url(')) { const u = (bg.match(/url\(["']?([^"')]+)/) || [])[1]; if (!svgSrc(u)) realPictures++; }
+  }
+  const uiPictures = [...document.querySelectorAll('[data-ui]')].filter((el) => { const r = el.getBoundingClientRect(); return r.width >= 300 && r.height >= 200; }).length;
   // which elements push the page wider than the viewport (the deepest ones that are not clipped by an ancestor)
   let overflowCulprits = [];
   if (document.documentElement.scrollWidth > W + 2) {
@@ -420,7 +437,7 @@ export function probe() {
     viewport: { w: W, h: H },
     page: { height: pageH, screens: round(pageH / H, 1), words: bodyText.split(/\s+/).filter(Boolean).length,
       img: document.images.length, video: document.querySelectorAll('video').length, canvas: document.querySelectorAll('canvas').length, svg: document.querySelectorAll('svg').length, sections: document.querySelectorAll('section').length,
-      horizontalOverflow: doc.scrollWidth > W + 2 ? doc.scrollWidth - W : 0, overflowCulprits, uiFragments, uiAbuse, blendText, sideScrollers, brokenImages, emoji: [...new Set(emoji)].slice(0, 10) },
+      horizontalOverflow: doc.scrollWidth > W + 2 ? doc.scrollWidth - W : 0, overflowCulprits, uiFragments, uiAbuse, realPictures, videoCount, uiPictures, pictureSamples, blendText, sideScrollers, brokenImages, emoji: [...new Set(emoji)].slice(0, 10) },
     hero: heroOut, h1,
     headings: headingStats.slice(0, 40),
     headingSummary: { count: headingStats.length, maxLines: Math.max(0, ...headingStats.map((h) => h.lines)), over2Lines: headingStats.filter((h) => h.lines > 2 && h.kind !== 'statement').length, statements: headingStats.filter((h) => h.kind === 'statement').length, centered: headingStats.filter((h) => h.align === 'center').length, medianWords: below.length ? below.map((h) => h.words).sort((a, b) => a - b)[Math.floor(below.length / 2)] : null, mixedFontHeadings: headingStats.filter((h) => h.mixedFonts).length },

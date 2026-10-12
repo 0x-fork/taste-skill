@@ -420,7 +420,7 @@
    "dark-neutral",
    "mono-accent"
   ],
-  "imagery": "No photographs needed. The interface fragments are the imagery: build them carefully with real labels, real numbers and sensible states (one hovered, one selected). Give them the product's true radii and spacing.",
+  "imagery": "The interface fragments are the main imagery: build them carefully with real labels, real numbers and sensible states (one hovered, one selected). Around them, two or three real pictures of the customer's world (found with scripts/assets.mjs), never stock of people at laptops.",
   "sectionTags": [
    "ui-led",
    "quiet"
@@ -436,8 +436,7 @@
    "opl-uni",
    "opl-kontu"
   ],
-  "allow": [],
-  "photos": false
+  "allow": []
  },
  {
   "id": "quiet-instrument",
@@ -469,7 +468,7 @@
    "light-neutral",
    "mono-accent"
   ],
-  "imagery": "Small and precise: a cropped interface detail, a single object photograph at column width, or nothing. Never a large hero image.",
+  "imagery": "Precise rather than loud: cropped interface details at true size, and real photographs of the customer's world held to the column width, each doing one job. One short looping clip can sit at column width too. Never a large stock hero image.",
   "sectionTags": [
    "quiet",
    "ui-led",
@@ -485,8 +484,7 @@
    "opl-bueno-fyi",
    "aww-gil-huybrecht"
   ],
-  "allow": [],
-  "photos": false
+  "allow": []
  },
  {
   "id": "hero-object",
@@ -1041,7 +1039,7 @@
    "technical"
   ],
   "needs": [],
-  "idea": "No images at all. The page is made only of words, colour and space, and it has to be good enough that nobody misses the pictures. This is the honest answer when a subject has nothing worth photographing: instead of inventing illustrations, set what you have to say as well as it can be set. The typography carries a point of view through scale (one enormous statement, everything else small), through measure (a narrow, bookish column or a full-width line), and through one committed colour.",
+  "idea": "The first screen is made only of words, colour and space, good enough that nobody misses a picture there. Pictures arrive later, large and few, as relief from the type. This is the honest answer when a subject has nothing worth photographing: instead of inventing illustrations, set what you have to say as well as it can be set. The typography carries a point of view through scale (one enormous statement, everything else small), through measure (a narrow, bookish column or a full-width line), and through one committed colour.",
   "composition": "First screen: the statement, two lines at most, set at 9–14vw and occupying the full width with tight leading, positioned in the upper two-thirds. One supporting sentence at 20–24px sits bottom-left on the same margin and the single action sits bottom-right on the same baseline. No navigation bar; two or three links in a top corner. Sections that follow are typographic set pieces, each different: a list of five to eight capabilities set at 4–6vw one per line; a paragraph at 28–36px in a 28ch column pushed to the right half; a pair of large numerals with a sentence each; a single quotation filling a colour field. Each section uses a different horizontal position (left, right, full) so the page has movement without imagery.",
   "typography": "This direction lives or dies on the face and its settings. Display at tight tracking and leading; text sizes few and far apart (for example 15, 22, 34 and the display size). Use real typographic detail: proper quotes, balanced line breaks, hung punctuation where it helps.",
   "typeClasses": [
@@ -1059,7 +1057,7 @@
    "light-neutral",
    "dark-neutral"
   ],
-  "imagery": "None. Do not add icons, shapes, patterns or abstract graphics to compensate. If a section feels empty, make its type larger or cut the section.",
+  "imagery": "The first screen has no picture. Further down, real pictures of the subject's world (found with scripts/assets.mjs) arrive large and few: a full-bleed photograph between two type sections, a looping clip in one band, an archival image beside a list. Do not add icons, shapes, patterns or abstract graphics to compensate for anything.",
   "sectionTags": [
    "type-led",
    "poster",
@@ -1075,7 +1073,6 @@
    "opl-statements",
    "aww-nothin"
   ],
-  "allow": [],
-  "photos": false
+  "allow": []
  }
 ]

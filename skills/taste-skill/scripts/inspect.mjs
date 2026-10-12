@@ -60,6 +60,22 @@ const browser = await Browser.launch();
 const helper = await browser.newPage({ width: 1600, height: 1000 });
 const report = { url: server ? target : url, at: new Date().toISOString(), allow, viewports: [], findings: [], images: [] };
 
+const MOTION_MIN = 8, MOTION_GOOD = 16; // distinct moving elements over load + one scroll through the page
+// Runs in the page before any of its own scripts: counts the distinct elements that actually move while
+// the page loads and is scrolled (CSS animations, CSS transitions, Web Animations, and script-driven
+// transform/opacity changes such as GSAP), so a page that never moves can be told from one that does.
+const MOTION_RECORDER = `(() => {
+  const seen = new WeakSet(); const c = { elements: 0, css: 0, transitions: 0, scripted: 0 };
+  const note = (t, k) => { if (!(t instanceof Element) || seen.has(t)) return; seen.add(t); c.elements++; c[k]++; };
+  addEventListener('animationstart', (e) => note(e.target, 'css'), true);
+  addEventListener('transitionrun', (e) => note(e.target, 'transitions'), true);
+  const watch = () => new MutationObserver((list) => { for (const m of list) { const s = m.target.getAttribute && m.target.getAttribute('style') || ''; if (/transform|translate|opacity|scale|rotate|clip-path/.test(s)) note(m.target, 'scripted'); } })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['style'], subtree: true });
+  if (document.documentElement) watch(); else addEventListener('DOMContentLoaded', watch);
+  window.__motionSample = () => { for (const a of document.getAnimations ? document.getAnimations() : []) { const t = a.effect && a.effect.target; if (t) note(t, a.constructor && a.constructor.name === 'CSSTransition' ? 'transitions' : 'css'); } };
+  window.__motion = () => { window.__motionSample(); const v = [...document.querySelectorAll('video')]; return { ...c, videos: v.length, playingVideos: v.filter((x) => x.autoplay || !x.paused).length }; };
+})();`;
+
 async function sheet(frames, cols, cellW, cellH, path) {
   const rows = Math.ceil(frames.length / cols);
   await helper.setViewport({ width: cols * cellW, height: rows * cellH, dsf: 1 });
@@ -76,6 +92,7 @@ try {
     const h = HEIGHT[w] || Math.round(w * 0.625);
     const label = name(w);
     const page = await browser.newPage({ width: w, height: h, dsf: 1, mobile: w < 600 });
+    await page.send('Page.addScriptToEvaluateOnNewDocument', { source: MOTION_RECORDER }).catch(() => {});
     const how = await page.goto(url, { timeoutMs: 30000, settleMs: 600 });
     await page.eval('document.fonts.ready.then(() => true)').catch(() => {});
     await sleep(1400); // let the load choreography finish before judging the first screen
@@ -93,7 +110,9 @@ try {
       await sleep(650);
       frames.push(await page.screenshot({ quality: 78 }));
       frameChecks.push(await page.eval(frame).catch(() => null));
+      await page.eval('window.__motionSample && window.__motionSample()').catch(() => {});
     }
+    const motion = await page.eval('window.__motion ? window.__motion() : null').catch(() => null);
     // re-measure after everything has revealed (catches content that only exists post-reveal)
     await page.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`).catch(() => {});
     await sleep(350);
@@ -124,8 +143,14 @@ try {
     frameChecks.forEach((f, i) => { for (const t of f?.big || []) { const r = runs.get(t) || { start: i, last: i - 1, best: 0 }; if (r.last === i - 1) r.last = i; else { r.start = i; r.last = i; } r.best = Math.max(r.best, r.last - r.start + 1); runs.set(t, r); } });
     const longPins = [...runs.entries()].filter(([, r]) => r.best >= 3);
     if (w >= 1100 && longPins.length && !allow.includes('long-pin')) findings.push({ level: 'WARN', id: 'long-pin', width: w, message: `The same large text stays on screen for ${Math.max(...longPins.map(([, r]) => r.best))} screens in a row: ` + longPins.slice(0, 2).map(([t]) => `"${t}"`).join('; '), fix: 'A pinned element earns two screens, and something must change at each. Shorten the run or give every screen its own content.' });
+    // a page that barely moves: counted from what really animated while it loaded and was scrolled
+    if (w >= 1100 && motion && !allow.includes('still-page')) {
+      const moving = motion.elements + motion.playingVideos * 4;
+      if (moving < MOTION_MIN) findings.push({ level: 'FAIL', id: 'still-page', width: w, message: `Only ${motion.elements} element(s) moved while the page loaded and scrolled${motion.playingVideos ? ` (plus ${motion.playingVideos} playing video)` : ''}.`, fix: 'Build the motion layer (SKILL.md step 9, references/motion.md): the signature move, an entrance for the parts of every section, feedback on every control, and one moving picture. Transform and opacity only, with a reduced-motion fallback.' });
+      else if (moving < MOTION_GOOD) findings.push({ level: 'WARN', id: 'still-page', width: w, message: `Little motion: ${motion.elements} element(s) moved while the page loaded and scrolled.`, fix: 'Give every section an entrance for its parts (not one fade of the whole block) and add one moving picture: a looping clip or a slow move on a photograph.' });
+    }
     if (w >= 1100 && empty.length >= 2 && !allow.includes('empty-screens')) findings.push({ level: 'FAIL', id: 'empty-screens', width: w, message: `${empty.length} of ${frameChecks.length} desktop screens are almost empty ground (under 20% of the screen holds text, a picture or a colour field): screens ${empty.map(({ i }) => i + 1).join(', ')}.`, fix: 'An empty screen is a rest only once per page. Elsewhere it means the section is underbuilt: set its content larger, give it the full information, put it on a colour field, or cut it.' });
-    report.viewports.push({ width: w, height: h, load: how, screens: frames.length, filled: frameChecks.map((f) => f?.filled ?? null), metrics: m, consoleErrors: page.consoleErrors.slice(0, 5) });
+    report.viewports.push({ width: w, height: h, load: how, screens: frames.length, filled: frameChecks.map((f) => f?.filled ?? null), motion, metrics: m, consoleErrors: page.consoleErrors.slice(0, 5) });
     report.findings.push(...findings);
     report.images.push({ viewport: label, width: w, fold, pages: sheets });
     await page.close();

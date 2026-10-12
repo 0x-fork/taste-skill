@@ -16,6 +16,7 @@ how to crop and place them, and what to do when there are none.
 8. Drawing the subject
 9. Type and colour alone
 10. Markup and credits
+11. Video
 
 ## 1. What the study measured
 
@@ -165,7 +166,8 @@ Treatments stay within section 6: untouched, greyscale for the whole set, or mul
 
 If two or three honest queries per idea find nothing that fits, draw (section 8). A drawing made for
 the subject is better than a found picture that is merely nearby. If the script cannot reach any
-source (no network), draw, and say so in the report.
+source (no network), draw, and say so in the report. For moving pictures, the same script searches
+real footage with `--video` (section 11).
 
 ## 4. The dealt photographs
 
@@ -309,3 +311,67 @@ The credits, as `--credits` prints them, in the footer:
   One line for all pictures; no credit captions laid over the pictures themselves. Credit only the
   pictures the page still uses.
 - A broken image fails the inspector. Check every picture in the screenshots.
+
+## 11. Video
+
+A moving picture of the subject's world can carry a section the way a photograph does: the river at
+the end of the street, the roaster's drum turning, a timber frame going up. `assets.mjs --video`
+searches real footage without keys: Wikimedia Commons (every video there comes with web-sized
+transcodes; the best source for short clips), the Internet Archive's Prelinger Archives (industrial,
+educational, city and home films from the 1920s to the 1970s, mostly public domain and mostly long)
+and NASA (the Earth from orbit, launches, aircraft, laboratories). The rest of the Internet Archive is
+left out: anyone can upload there, and the licence claims are unchecked.
+
+```bash
+node <skill>/scripts/assets.mjs "coffee roasting" --video
+node <skill>/scripts/assets.mjs "river" --video --source commons,nasa --orientation landscape
+node <skill>/scripts/assets.mjs --get commons:49769620        # the clip, a poster frame, the credit
+```
+
+It takes a rendition of 720p or smaller (`--res` changes that), lists short clips first, prints each
+clip's length and file size, and flags anything over 25 MB or longer than a minute. `--get` refuses a
+clip over 25 MB unless you pass `--max-mb`, and saves the source's still frame beside it as the
+poster (Commons and NASA; the archive's own stills are too small). An archive film of ten minutes is
+too heavy as it stands: trim a few seconds from it with ffmpeg if it is installed, or choose a
+shorter clip. Licences, credits and honesty work exactly as for pictures (section 3).
+
+**Choosing a clip.**
+
+- **Short:** 5 to 20 seconds that loop without a visible jump: water, smoke, a turning drum, traffic,
+  leaves, a crowd from far away. Watch it to the end before choosing.
+- **Light:** under about 5 MB for a section and 10 MB for a hero. 720p is plenty behind type.
+- **Clean:** no slate, title card, logo, watermark or burned-in caption. NASA and archive films often
+  open with a slate, and the source's poster frame may be that slate. No recognisable person who could
+  be taken for the client's staff or customers.
+- **Never the client's own:** a found clip of a roastery is not this roastery.
+- **One per page, two at most.** A page of moving tiles is noise.
+
+**On the page.**
+
+- Muted, looping, inline, with a poster and a fixed size, as `--get` prints it:
+  `<video autoplay muted loop playsinline preload="metadata" poster="assets/river-poster.jpg"
+  width="854" height="480" aria-hidden="true"><source src="assets/river.webm" type="video/webm"></video>`.
+  No sound and no controls on a decorative loop. `aria-hidden` because it is decoration: whatever the
+  clip says that matters belongs in the text beside it.
+- The poster shows before the clip plays, on slow connections and under reduced motion, so it must
+  work as a picture on its own. If the source's still is a slate or a blur, take a frame from the clip
+  yourself or use a found picture.
+- Under `prefers-reduced-motion: reduce`, stop it and show the poster:
+
+  ```html
+  <script>
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+    for (const v of document.querySelectorAll('video[autoplay]')) {
+      const sync = () => { if (calm.matches) { v.removeAttribute('autoplay'); v.pause(); v.load(); } else { v.play().catch(() => {}); } };
+      sync(); calm.addEventListener('change', sync);
+    }
+  </script>
+  ```
+
+- Crop and place it like a photograph (sections 5 and 6): `object-fit: cover`, one ratio, square
+  corners, no frame, a ground-coloured `background-color` while it loads.
+- Never under body text. A headline over a clip gets the same neutral scrim as text on a photograph,
+  and nothing lies on top of a headline or a statement.
+- It is motion: let it be the page's one moving thing, or sit in a section where nothing else moves.
+- Credit it with the pictures: `--credits` prints one footer line for both ("Pictures and footage:")
+  and the list for the report, with each clip's length.

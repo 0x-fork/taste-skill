@@ -14,14 +14,19 @@
 //        [--orientation landscape|portrait|square]  [--min-width 1000]  [--width 1920]  [--limit 5]
 //        [--no-check]                              skip checking that each image loads (faster)
 //        [--json]                                  machine-readable results
-//   node assets.mjs --get <ref>[,<ref>...] [--to assets] [--name <file name>] [--width 1920]
+//   node assets.mjs "<query>" --video              search for real footage instead (same options, plus
+//        [--res 720]                               the largest rendition to pick, by its short side
+//        [--max-mb 25]                             clips over this are flagged, and --get refuses them
+//   node assets.mjs --get <ref>[,<ref>...] [--to assets] [--name <file name>] [--width 1920] [--res 720] [--max-mb 25]
 //                                                  download into the project and record the credit
 //   node assets.mjs --credits [--to assets]        print the credits for the footer and the report
 //
-// Sources: Openverse (api.openverse.org: Flickr, Wikimedia Commons, museums and libraries in one index),
-// Wikimedia Commons, the Art Institute of Chicago (public-domain works over IIIF) and The Metropolitan
-// Museum of Art (Open Access). Zero dependencies, no API keys. Node 18+ (built-in fetch).
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+// Image sources: Openverse (api.openverse.org: Flickr, Wikimedia Commons, museums and libraries in one
+// index), Wikimedia Commons, the Art Institute of Chicago (public-domain works over IIIF) and The
+// Metropolitan Museum of Art (Open Access). Video sources: Wikimedia Commons (with its web-sized webm
+// transcodes), the Internet Archive (its curated Prelinger Archives of films, public domain or Creative
+// Commons) and the NASA Image and Video Library. Zero dependencies, no API keys. Node 18+ (built-in fetch).
+import { readFileSync, writeFileSync, existsSync, mkdirSync, createWriteStream, unlinkSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,12 +34,15 @@ const UA = 'taste-skill-assets/2.0 (+https://github.com/Leonxlnx/taste-skill)';
 const SELF = fileURLToPath(import.meta.url).split('\\').join('/');
 const CMD = `node ${/\s/.test(SELF) ? `"${SELF}"` : SELF}`;
 const SOURCES = {
-  openverse: { name: 'Openverse', note: 'one index over Flickr, Wikimedia Commons, museums and libraries' },
-  commons: { name: 'Wikimedia Commons', note: 'archival photographs, old maps, scans of prints and books, places as they look now' },
-  aic: { name: 'Art Institute of Chicago', note: 'public-domain paintings, prints, photographs and textiles, served large' },
-  met: { name: 'The Metropolitan Museum of Art', note: 'public-domain objects, prints, drawings and photographs (Open Access)' },
+  openverse: { media: 'image', name: 'Openverse', note: 'one index over Flickr, Wikimedia Commons, museums and libraries' },
+  commons: { media: 'both', name: 'Wikimedia Commons', note: 'archival photographs, old maps, scans of prints and books, places as they look now', videoNote: 'video files with web-sized webm transcodes: places, crafts, processes, nature' },
+  aic: { media: 'image', name: 'Art Institute of Chicago', note: 'public-domain paintings, prints, photographs and textiles, served large' },
+  met: { media: 'image', name: 'The Metropolitan Museum of Art', note: 'public-domain objects, prints, drawings and photographs (Open Access)' },
+  archive: { media: 'video', name: 'Internet Archive', note: 'the Prelinger Archives: industrial, educational, city and home films from the 1920s to the 1970s, mostly long' },
+  nasa: { media: 'video', name: 'NASA Image and Video Library', note: 'footage of the Earth, space, aircraft, launches and laboratories' },
 };
-const SOURCE_ALIAS = { all: Object.keys(SOURCES), museums: ['aic', 'met'], wikimedia: ['commons'], artic: ['aic'], chicago: ['aic'], metmuseum: ['met'] };
+const SOURCE_ALIAS = { museums: ['aic', 'met'], wikimedia: ['commons'], artic: ['aic'], chicago: ['aic'], metmuseum: ['met'], ia: ['archive'], internetarchive: ['archive'] };
+const VIDEO_TYPES = { 'video/mp4': 'mp4', 'video/webm': 'webm' }; // what every current browser plays; Ogg Theora and QuickTime are left out
 const LICENCES = ['cc0', 'pd', 'by', 'by-sa', 'by-nc', 'by-nd', 'by-nc-sa', 'by-nc-nd', 'other'];
 const SAFE = ['cc0', 'pd', 'by', 'by-sa'];
 const LICENCE_ALIAS = { pdm: 'pd', 'public-domain': 'pd', publicdomain: 'pd', 'cc-by': 'by', 'cc-by-sa': 'by-sa', 'cc-zero': 'cc0' };
@@ -54,16 +62,22 @@ const USAGE = `Find real, openly licensed pictures of the subject's world, downl
       --limit <n>            results per source, default 5 (at most 20)
       --no-check             do not check that every image loads (faster, less reliable)
       --json                 machine-readable results
-  ${CMD} --get <ref>[,<ref>...] [--to assets] [--name <file name>] [--width 1920]
+  ${CMD} "<query>" --video [options]   real footage: Wikimedia Commons, Internet Archive, NASA
+      --source all|commons|archive|nasa
+      --res <p>              largest rendition to pick, by its short side, default 720
+      --max-mb <n>           clips over this are flagged and --get refuses them, default 25
+      --min-width <px>       default 640 for video
+  ${CMD} --get <ref>[,<ref>...] [--to assets] [--name <file name>] [--width 1920] [--res 720] [--max-mb 25]
   ${CMD} --credits [--to assets]
 
 Queries work best in the subject's own words and a medium: "ghent postcard", "ghent old map", "azulejo tiles",
 "botanical engraving fig", "rotterdam harbour 1920", "basalt texture". The museum sources match one or two
-words best ("fig", "harbour").`;
+words best ("fig", "harbour"). For footage, name the action or the process: "coffee roasting", "timber
+construction", "river", "city street night".`;
 
 // ---------- arguments ----------
-const VALUED = new Set(['source', 'sources', 'license', 'licence', 'orientation', 'min-width', 'width', 'limit', 'get', 'to', 'name']);
-const FLAGS = new Set(['no-check', 'json', 'credits', 'help']);
+const VALUED = new Set(['source', 'sources', 'license', 'licence', 'orientation', 'min-width', 'width', 'limit', 'get', 'to', 'name', 'type', 'res', 'max-mb']);
+const FLAGS = new Set(['no-check', 'json', 'credits', 'help', 'video']);
 const args = {}; const words = [];
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i++) {
@@ -86,14 +100,20 @@ function number(key, def, min, max) {
   if (!Number.isFinite(n) || n < min || n > max) fail(`--${key} must be a number from ${min} to ${max}.`);
   return Math.round(n);
 }
+if (args.type !== undefined && !['image', 'images', 'video', 'videos'].includes(String(args.type).toLowerCase())) fail('--type is image or video.');
+const VIDEO = Boolean(args.video) || /^videos?$/i.test(String(args.type || ''));
 function pickSources(value) {
+  const media = VIDEO ? 'video' : 'image';
+  const usable = Object.keys(SOURCES).filter((k) => SOURCES[k].media === media || SOURCES[k].media === 'both');
   const out = [];
   for (const s of String(value).toLowerCase().split(',').map((x) => x.trim()).filter(Boolean)) {
-    const found = SOURCE_ALIAS[s] || (SOURCES[s] ? [s] : null);
-    if (!found) fail(`Unknown source "${s}". Sources: ${Object.keys(SOURCES).join(', ')}, museums (aic and met), all.`);
+    const found = s === 'all' ? usable : SOURCE_ALIAS[s] || (SOURCES[s] ? [s] : null);
+    if (!found) fail(`Unknown source "${s}". ${VIDEO ? 'Video' : 'Image'} sources: ${usable.join(', ')}${VIDEO ? '' : ', museums (aic and met)'}, all.`);
+    const wrong = found.filter((x) => !usable.includes(x));
+    if (wrong.length) fail(`${wrong.join(', ')} has no ${media === 'video' ? 'video' : 'still images'} here. ${VIDEO ? 'Video' : 'Image'} sources: ${usable.join(', ')}.`);
     for (const x of found) if (!out.includes(x)) out.push(x);
   }
-  return out.length ? out : Object.keys(SOURCES);
+  return out.length ? out : usable;
 }
 function pickLicences(value) {
   const v = String(value).toLowerCase().trim();
@@ -116,9 +136,12 @@ const o = {
   sources: pickSources(args.source ?? args.sources ?? 'all'),
   licences: pickLicences(args.license ?? args.licence ?? 'safe'),
   orientation: pickOrientation(args.orientation),
-  minWidth: number('min-width', 1000, 0, 20000),
+  minWidth: number('min-width', VIDEO ? 640 : 1000, 0, 20000),
   width: number('width', 1920, 200, 4000),
   limit: number('limit', 5, 1, 20),
+  video: VIDEO,
+  res: number('res', 720, 144, 2160),
+  maxMb: number('max-mb', 25, 1, 2000),
   check: !args['no-check'],
   to: resolve(String(args.to || 'assets')),
   toArg: args.to ? ` --to ${args.to}` : '',
@@ -148,7 +171,7 @@ function slug(s) {
 function queryWords(q) { return String(q).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w && !['the', 'a', 'an', 'of', 'in', 'on', 'at', 'and', 'or', 'for', 'with', 'from', 'to', 'by'].includes(w)); }
 function onSubject(wanted, description) {
   if (!wanted.length) return true;
-  const loose = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/our\b/g, 'or'); // harbour = harbor
+  const loose = (s) => String(s).toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '').replace(/our\b/g, 'or'); // harbour = harbor
   const hay = loose(description);
   const hits = wanted.filter((w) => { const x = loose(w); return hay.includes(x) || (x.length > 4 && hay.includes(x.replace(/(es|s)$/, ''))); }).length;
   return hits >= (wanted.length >= 3 ? wanted.length - 1 : wanted.length);
@@ -198,21 +221,44 @@ function dims(b) {
   }
   return {};
 }
+// Width, height and duration from the head of an MP4 whose index comes first (what web renditions use).
+function mp4Info(b) {
+  const out = {}; let i = -1; let area = 0;
+  while ((i = b.indexOf('tkhd', i + 1)) > 3) { // one per track; the video track is the one with a size
+    const end = i - 4 + b.readUInt32BE(i - 4);
+    if (end <= b.length && end - (i - 4) >= 84) { const w = b.readUInt32BE(end - 8) >>> 16; const h = b.readUInt32BE(end - 4) >>> 16; if (w * h > area) { area = w * h; out.w = w; out.h = h; } }
+  }
+  const m = b.indexOf('mvhd');
+  if (m > 3 && m + 36 <= b.length) {
+    const v1 = b[m + 4] === 1; const scale = b.readUInt32BE(m + (v1 ? 24 : 16)); const d = v1 ? Number(b.readBigUInt64BE(m + 28)) : b.readUInt32BE(m + 20);
+    if (scale && d) out.duration = d / scale;
+  }
+  return out;
+}
+const clock = (s) => { if (!s && s !== 0) return null; const t = Math.round(s); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 // The Art Institute's image server turns away scripts that do not name themselves in this header.
 const imageHeaders = (url) => ({ 'User-Agent': UA, Accept: 'image/*', ...(/^https?:\/\/[^/]*artic\.edu\//.test(url) ? AIC_HEADERS : {}) });
-// Does the image load, is it a web image, and how large is it? Reads only the first 128 KB.
-async function probe(url, ms = 15000) {
+// Does the file load, is it something a browser shows, and how large is it? Reads only the first
+// 128 KB of an image, or 512 KB of a video (enough for an MP4's size and duration).
+async function probe(url, ms = 15000, video = false, again = true) {
   const ac = new AbortController(); const timer = setTimeout(() => ac.abort(), ms);
+  const want = video ? 524288 : 131072;
   try {
-    const r = await fetch(url, { headers: { ...imageHeaders(url), Range: 'bytes=0-131071' }, signal: ac.signal, redirect: 'follow' });
-    if (!r.ok) { r.body?.cancel().catch(() => {}); return { ok: false, why: `HTTP ${r.status}` }; }
+    const headers = video ? { 'User-Agent': UA, Accept: 'video/*' } : imageHeaders(url);
+    const r = await fetch(url, { headers: { ...headers, Range: `bytes=0-${want - 1}` }, signal: ac.signal, redirect: 'follow' });
+    if (!r.ok) {
+      r.body?.cancel().catch(() => {});
+      if (r.status >= 500 && again) { clearTimeout(timer); await sleep(1000); return probe(url, ms, video, false); } // file servers stumble now and then
+      return { ok: false, why: `HTTP ${r.status}` };
+    }
     const type = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
-    if (!WEB_TYPES[type]) { r.body?.cancel().catch(() => {}); return { ok: false, why: type ? `not a web image (${type})` : 'no content type' }; }
+    if (!(video ? VIDEO_TYPES : WEB_TYPES)[type]) { r.body?.cancel().catch(() => {}); return { ok: false, why: type ? `not a web ${video ? 'video' : 'image'} (${type})` : 'no content type' }; }
     const reader = r.body.getReader(); const chunks = []; let n = 0;
-    while (n < 131072) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); n += value.length; }
+    while (n < want) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); n += value.length; }
     reader.cancel().catch(() => {});
     const bytes = r.status === 206 ? Number((r.headers.get('content-range') || '').split('/')[1]) || null : Number(r.headers.get('content-length')) || null;
-    return { ok: true, type, bytes, ...dims(Buffer.concat(chunks)) };
+    const head = Buffer.concat(chunks);
+    return { ok: true, type, bytes, ...(video ? (type === 'video/mp4' ? mp4Info(head) : {}) : dims(head)) };
   } catch (e) {
     return { ok: false, why: e.name === 'AbortError' ? 'timed out' : e.cause?.code || e.message };
   } finally { clearTimeout(timer); }
@@ -248,7 +294,28 @@ function credit(it) {
   return `"${short(it.title, 90)}"${by}${date}, ${licenceLabel(it)}, via ${it.via}`;
 }
 function base(source, id) {
-  return { ref: `${source}:${id}`, source, via: SOURCES[source].name, title: '', creator: '', creatorUrl: null, date: null, kind: null, about: null, license: 'other', licenseVersion: null, licenseName: null, licenseUrl: null, page: null, image: null, original: null, smaller: null, width: null, height: null, imageWidth: null, imageHeight: null, bytes: null, alt: null, notes: [], hint: null };
+  return { ref: `${source}:${id}`, source, media: 'image', via: SOURCES[source].name, title: '', creator: '', creatorUrl: null, date: null, kind: null, about: null, license: 'other', licenseVersion: null, licenseName: null, licenseUrl: null, page: null, image: null, original: null, smaller: null, width: null, height: null, imageWidth: null, imageHeight: null, bytes: null, estimated: false, duration: null, poster: null, alt: null, notes: [], hint: null };
+}
+// Licence code and version from a licence URL (Creative Commons licences and marks).
+function licenceFromUrl(u) {
+  const s = String(u || '').toLowerCase();
+  if (/publicdomain\/zero/.test(s)) return { code: 'cc0', version: '1.0' };
+  if (/publicdomain\/mark|publicdomain\/?$|\/publicdomain\b/.test(s)) return { code: 'pd', version: null };
+  const m = s.match(/creativecommons\.org\/licenses\/(by(?:-nc)?(?:-sa|-nd)?)\/(\d\.\d)/);
+  return m ? { code: m[1], version: m[2] } : { code: 'other', version: null };
+}
+// Of the renditions a source offers, the largest whose short side is at most `res` (720p by default),
+// in a format every browser plays. If all are larger, the smallest one.
+function pickRendition(list, res) {
+  const playable = list.filter((r) => r.url && VIDEO_TYPES[r.type]);
+  const side = (r) => (r.w && r.h ? Math.min(r.w, r.h) : Infinity);
+  const fit = playable.filter((r) => side(r) <= res).sort((a, b) => side(b) - side(a) || (a.bytes ?? 1e15) - (b.bytes ?? 1e15));
+  return fit[0] || playable.sort((a, b) => side(a) - side(b) || (a.bytes ?? 1e15) - (b.bytes ?? 1e15))[0] || null;
+}
+function useRendition(it, pick, largest) {
+  Object.assign(it, { media: 'video', image: pick.url, mime: pick.type, imageWidth: pick.w || null, imageHeight: pick.h || null, bytes: pick.bytes || null, estimated: Boolean(pick.estimated), duration: it.duration || pick.duration || null });
+  if (largest) { it.width = largest.w || it.width; it.height = largest.h || it.height; }
+  return it;
 }
 
 // ---------- Openverse ----------
@@ -408,6 +475,113 @@ function fromMet(x) {
   return it;
 }
 
+// ---------- video: Wikimedia Commons ----------
+async function searchCommonsVideo(q, opts) {
+  const j = await getJson(commonsApi({ generator: 'search', gsrnamespace: '6', gsrsearch: `${q} filetype:video`, gsrlimit: '30', ...commonsInfo(1280), prop: 'imageinfo|videoinfo', viprop: 'derivatives' }));
+  if (j.error) throw new Error(j.error.info || 'the search failed');
+  const pages = (j.query?.pages || []).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+  return { total: null, items: pages.map((pg) => fromCommonsVideo(pg, opts)).filter(Boolean) };
+}
+function fromCommonsVideo(pg, opts) {
+  const it = fromCommons(pg); const ii = pg?.imageinfo?.[0];
+  if (!it || !ii) return null;
+  it.poster = it.image !== it.original ? it.image : null; // for a video file, the thumbnail is a still frame
+  it.duration = Number(ii.duration) || null;
+  // the original plus the transcodes Commons makes of every video (240p to 1080p webm); sizes from their bit rates
+  const renditions = (pg.videoinfo?.[0]?.derivatives || []).map((d) => {
+    const url = noQuery(d.src); const original = !/\/transcoded\//.test(url);
+    return { url, type: String(d.type || '').split(';')[0].trim(), w: Number(d.width) || null, h: Number(d.height) || null,
+      bytes: original ? Number(ii.size) || null : d.bandwidth && it.duration ? Math.round((d.bandwidth * it.duration) / 8) : null, estimated: !original };
+  });
+  const pick = pickRendition(renditions, opts.res);
+  return pick ? useRendition(it, pick, { w: ii.width, h: ii.height }) : null;
+}
+
+// ---------- video: Internet Archive ----------
+const first = (v) => (Array.isArray(v) ? v[0] : v);
+const seconds = (s) => {
+  if (s === undefined || s === null || s === '') return null;
+  if (/^\d+(\.\d+)?$/.test(String(s))) return Number(s);
+  const p = String(s).split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, x) => a * 60 + x, 0) : null;
+};
+// Only the Prelinger Archives: curated industrial, educational, advertising and home films, mostly in the
+// public domain. The rest of the archive's films are uploads by anyone, and their licence claims go
+// unchecked (an upload called "... all rights reserved" can carry a public-domain mark), so they are left out.
+const ARCHIVE_LICENCE = { cc0: '*publicdomain\\/zero*', pd: '*publicdomain*', by: '*licenses\\/by\\/*', 'by-sa': '*licenses\\/by-sa\\/*', 'by-nc': '*licenses\\/by-nc\\/*', 'by-nd': '*licenses\\/by-nd\\/*', 'by-nc-sa': '*licenses\\/by-nc-sa\\/*', 'by-nc-nd': '*licenses\\/by-nc-nd\\/*' };
+async function searchArchive(q, opts) {
+  const words = queryWords(q);
+  const licences = opts.licences.includes('other') ? '' : ` AND licenseurl:(${[...new Set(opts.licences.map((l) => ARCHIVE_LICENCE[l]))].join(' OR ')})`;
+  const p = new URLSearchParams({ q: `(${(words.length ? words : [q]).join(' AND ')}) AND mediatype:(movies) AND collection:(prelinger)${licences}`, rows: '40', output: 'json' });
+  for (const f of ['identifier', 'licenseurl']) p.append('fl[]', f);
+  const j = await getJson(`https://archive.org/advancedsearch.php?${p}`, 30000);
+  if (j.error) throw new Error(`its search is failing right now (${short(text(j.error), 80)}); try again later`);
+  const docs = j.response?.docs || [];
+  const allowed = docs.filter((d) => opts.licences.includes(licenceFromUrl(first(d.licenseurl)).code));
+  const metas = await mapLimit(allowed.slice(0, opts.limit * 2 + 4), 6, (d) => getJson(`https://archive.org/metadata/${encodeURIComponent(d.identifier)}`, 20000).catch(() => null));
+  return { total: j.response?.numFound ?? null, skippedLicence: docs.length - allowed.length, items: metas.map((m) => fromArchive(m, opts)).filter(Boolean) };
+}
+function fromArchive(m, opts) {
+  const md = m?.metadata; if (!md?.identifier || !Array.isArray(m.files)) return null;
+  const id = md.identifier;
+  const fileUrl = (name) => `https://archive.org/download/${encodeURIComponent(id)}/${String(name).split('/').map(encodeURIComponent).join('/')}`;
+  const isVideo = (f) => /\.(mp4|m4v|webm|mpe?g|avi|mov|ogv|mkv|wmv|flv)$/i.test(f.name || '');
+  // an item can hold several films: keep the first original and the web copies made from it
+  const originals = m.files.filter((f) => f.source === 'original' && isVideo(f));
+  const stem = originals[0] ? originals[0].name.replace(/\.[^.]+$/, '') : null;
+  const family = m.files.filter((f) => isVideo(f) && (!stem || f.name.startsWith(stem)));
+  const renditions = family.filter((f) => /\.(mp4|webm)$/i.test(f.name)).map((f) => ({ url: fileUrl(f.name), type: /\.webm$/i.test(f.name) ? 'video/webm' : 'video/mp4', w: Number(f.width) || null, h: Number(f.height) || null, bytes: Number(f.size) || null, duration: seconds(f.length) }));
+  const pick = pickRendition(renditions, opts.res); if (!pick) return null;
+  const largest = family.reduce((a, f) => ((Number(f.width) || 0) > (a.w || 0) ? { w: Number(f.width), h: Number(f.height) } : a), { w: pick.w, h: pick.h });
+  const lic = licenceFromUrl(first(md.licenseurl));
+  const it = base('archive', id);
+  Object.assign(it, {
+    title: text(first(md.title)) || id, creator: text(first(md.creator)), date: text(first(md.date) || first(md.year)) || null, about: text(first(md.description)) || null,
+    license: lic.code, licenseVersion: lic.version, licenseUrl: first(md.licenseurl) || null, page: `https://archive.org/details/${id}`,
+    original: fileUrl((originals[0] || family[0]).name), duration: pick.duration || seconds(first(md.runtime)),
+    poster: null, // the archive's own stills are about 160 pixels wide: too small to stand in for a clip
+  });
+  // the same film is often stored in several formats; different names mean different films
+  const films = new Set(originals.map((f) => f.name.split('/').pop().split('.')[0])).size;
+  if (films > 1) it.notes.push(`This item holds ${films} films; the first is shown. The page lists the others.`);
+  return useRendition(it, pick, largest);
+}
+
+// ---------- video: NASA Image and Video Library ----------
+const nasaUrl = (u) => (u ? encodeURI(String(u).replace(/^http:/, 'https:')).replace(/%25([0-9a-f]{2})/gi, '%$1') : null);
+async function searchNasa(q, opts) {
+  const j = await getJson(`https://images-api.nasa.gov/search?${new URLSearchParams({ q, media_type: 'video', page_size: String(Math.min(100, opts.limit * 3 + 6)) })}`);
+  // its search matches any word anywhere; keep the clips whose own title, description or keywords carry the query
+  const wanted = queryWords(q);
+  const rows = (j.collection?.items || []).filter((x) => { const d = x.data?.[0] || {}; return onSubject(wanted, [d.title, d.description, ...(d.keywords || [])].join(' ')); }).slice(0, opts.limit * 2 + 4);
+  const items = await mapLimit(rows, 6, async (x) => fromNasa(x, await getJson(nasaUrl(x.href), 15000).catch(() => null), opts));
+  return { total: j.collection?.metadata?.total_hits ?? null, items: items.filter(Boolean) };
+}
+function fromNasa(x, files, opts) {
+  const d = x?.data?.[0]; if (!d?.nasa_id || !Array.isArray(files)) return null;
+  const find = (suffix) => files.find((f) => String(f).endsWith(suffix));
+  // NASA makes the same renditions of every video; these are their 16:9 sizes, and the check reads the real ones
+  const renditions = [['~large.mp4', 1920, 1080], ['~medium.mp4', 1280, 720], ['~small.mp4', 640, 360], ['~mobile.mp4', 320, 180]]
+    .filter(([s]) => find(s)).map(([s, w, h]) => ({ url: nasaUrl(find(s)), type: 'video/mp4', w, h }));
+  const pick = pickRendition(renditions, opts.res); if (!pick) return null;
+  const it = base('nasa', encodeURIComponent(d.nasa_id));
+  Object.assign(it, {
+    title: text(d.title) || d.nasa_id, creator: text(d.photographer || d.secondary_creator) || `NASA${d.center ? ' ' + d.center : ''}`,
+    date: String(d.date_created || '').slice(0, 10) || null, about: text(d.description) || null,
+    license: 'pd', licenseName: 'public domain (NASA)', licenseUrl: 'https://www.nasa.gov/nasa-brand-center/images-and-media/',
+    page: `https://images.nasa.gov/details/${encodeURIComponent(d.nasa_id)}`, original: nasaUrl(find('~orig.mp4')) || pick.url,
+    poster: nasaUrl(find('~large.jpg') || find('~medium.jpg') || find('~thumb.jpg')),
+  });
+  it.notes.push('NASA footage is generally free of copyright in the US. Never use NASA logos or suggest NASA endorses the client; check the page for third-party material.');
+  return useRendition(it, pick, renditions[0]);
+}
+function videoNotes(it, opts) {
+  const n = [];
+  const smaller = it.imageWidth && it.imageHeight && Math.min(it.imageWidth, it.imageHeight) > 480;
+  if (it.bytes && it.bytes > opts.maxMb * 1048576) n.push(`Over ${opts.maxMb} MB (${it.estimated ? 'about ' : ''}${size(it.bytes)}): too heavy for a page, and --get refuses it unless you pass --max-mb. ${smaller ? 'Try --res 480, or a shorter clip.' : 'Choose a shorter clip.'}`);
+  if (it.duration && it.duration > 60) n.push(`Long (${clock(it.duration)}): a loop on a page wants 5 to 20 seconds. Prefer a shorter clip, or trim one with ffmpeg if it is installed.`);
+  return n;
+}
+
 // ---------- search ----------
 function fits(it, opts, skipped) {
   const W = it.width || it.imageWidth; const H = it.height || it.imageHeight;
@@ -416,16 +590,20 @@ function fits(it, opts, skipped) {
   return true;
 }
 async function search(query, opts) {
-  const runners = { openverse: searchOpenverse, commons: searchCommons, aic: searchAic, met: searchMet };
-  // a slow service never holds the whole search: each source gets 45 s, the image check 30 s
+  const runners = opts.video ? { commons: searchCommonsVideo, archive: searchArchive, nasa: searchNasa } : { openverse: searchOpenverse, commons: searchCommons, aic: searchAic, met: searchMet };
+  // a slow service never holds the whole search: each source gets 45 s, the check 30 s
   const deadline = (ms, message) => new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms).unref());
   const results = await Promise.all(opts.sources.map(async (key) => {
     try { return { key, ...(await Promise.race([runners[key](query, opts), deadline(45000, 'no complete answer within 45 s; try again or search another --source')])) }; }
     catch (e) { return { key, error: e.message, items: [] }; }
   }));
+  // short clips first, then longer ones, then anything over the size cap; the source's own order within each
+  const cap = opts.maxMb * 1048576;
+  const rank = (it) => (it.media !== 'video' ? 0 : it.bytes && it.bytes > cap ? 4 : !it.duration ? 3 : it.duration <= 30 ? 0 : it.duration <= 90 ? 1 : it.duration <= 300 ? 2 : 3);
+  const byRank = (a, b) => rank(a) - rank(b);
   const seen = new Set();
   for (const r of results) {
-    r.skipped = { licence: 0, small: 0, shape: 0, dead: 0, alike: 0 };
+    r.skipped = { licence: r.skippedLicence || 0, small: 0, shape: 0, dead: 0, alike: 0 };
     const titles = new Map();
     r.items = r.items.filter((it) => {
       if (!opts.licences.includes(it.license)) { r.skipped.licence++; return false; }
@@ -435,31 +613,35 @@ async function search(query, opts) {
       const t = it.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().slice(0, 32); const n = (titles.get(t) || 0) + 1; titles.set(t, n);
       if (t && n > 2) { r.skipped.alike++; return false; }
       return true;
-    }).slice(0, opts.limit + 4); // a few spares for images that turn out not to load
+    }).sort(byRank).slice(0, opts.limit + 4); // a few spares for files that turn out not to load
   }
   if (opts.check) {
     await Promise.race([mapLimit(results.flatMap((r) => r.items), 8, async (it) => {
-      const p = await probe(it.image, 12000); it.check = p;
+      const video = it.media === 'video';
+      const p = await probe(it.image, video ? 15000 : 12000, video); it.check = p;
       if (p.ok && p.w && p.h) {
         it.imageWidth = p.w; it.imageHeight = p.h;
         if (!it.width || it.image === it.original) { it.width = p.w; it.height = p.h; }
       }
-      if (p.ok && p.bytes) it.bytes = p.bytes;
+      if (p.ok && p.bytes) { it.bytes = p.bytes; it.estimated = false; }
+      if (p.ok && p.duration) it.duration = p.duration;
     }), new Promise((r) => setTimeout(r, 30000).unref())]);
-    for (const r of results) r.items = r.items.filter((it) => (it.check?.ok ? fits(it, opts, r.skipped) : (r.skipped.dead++, (r.skipped.why = it.check?.why || 'not checked within 30 s'), false)));
+    for (const r of results) r.items = r.items.filter((it) => (it.check?.ok ? fits(it, opts, r.skipped) : (r.skipped.dead++, (r.skipped.why = it.check?.why || 'not checked within 30 s'), false))).sort(byRank);
   }
   for (const r of results) r.items = r.items.slice(0, opts.limit);
   const shown = results.reduce((n, r) => n + r.items.length, 0);
 
   if (args.json) {
-    console.log(JSON.stringify({ query, options: { sources: opts.sources, licences: opts.licences, orientation: opts.orientation, minWidth: opts.minWidth, width: opts.width, limit: opts.limit, checked: opts.check },
+    console.log(JSON.stringify({ query, options: { media: opts.video ? 'video' : 'image', sources: opts.sources, licences: opts.licences, orientation: opts.orientation, minWidth: opts.minWidth, width: opts.width, res: opts.video ? opts.res : undefined, maxMb: opts.video ? opts.maxMb : undefined, limit: opts.limit, checked: opts.check },
       sources: results.map((r) => ({ source: r.key, name: SOURCES[r.key].name, total: r.total ?? null, error: r.error || null, skipped: r.skipped,
-        items: r.items.map(({ check, ...it }) => ({ ...it, licenseLabel: licenceLabel(it), licenseUrl: licenceUrl(it), creditRequired: creditRequired(it), credit: credit(it), notes: [...it.notes, ...licenceNotes(it)] })) })) }, null, 1));
+        items: r.items.map(({ check, ...it }) => ({ ...it, licenseLabel: licenceLabel(it), licenseUrl: licenceUrl(it), creditRequired: creditRequired(it), credit: credit(it), notes: [...it.notes, ...licenceNotes(it), ...(it.media === 'video' ? videoNotes(it, opts) : [])] })) })) }, null, 1));
     return shown ? 0 : 1;
   }
 
-  const filters = [`licences ${opts.licences.join(', ')}`, `at least ${opts.minWidth}px wide`, opts.orientation, `image URLs ${opts.width}px wide where the source can size them`, opts.check ? 'every image checked' : 'images not checked'].filter(Boolean);
-  console.log(`ASSETS · "${query}" · ${filters.join(' · ')}`);
+  const filters = opts.video
+    ? [`licences ${opts.licences.join(', ')}`, `at least ${opts.minWidth}px wide`, opts.orientation, `renditions up to ${opts.res}p`, `flagged over ${opts.maxMb} MB`, opts.check ? 'every file checked' : 'files not checked']
+    : [`licences ${opts.licences.join(', ')}`, `at least ${opts.minWidth}px wide`, opts.orientation, `image URLs ${opts.width}px wide where the source can size them`, opts.check ? 'every image checked' : 'images not checked'];
+  console.log(`ASSETS${opts.video ? ' · VIDEO' : ''} · "${query}" · ${filters.filter(Boolean).join(' · ')}`);
   for (const r of results) {
     const src = SOURCES[r.key];
     console.log('');
@@ -469,7 +651,7 @@ async function search(query, opts) {
     console.log(`## ${src.name}: ${r.items.length ? count : 'nothing usable'}${dropped.length ? ` (dropped: ${dropped.join(', ')})` : ''}`);
     if (r.note) console.log(r.note);
     if (!r.items.length) continue;
-    console.log(`${src.note}`);
+    console.log(`${(opts.video && src.videoNote) || src.note}`);
     for (const it of r.items) {
       console.log('');
       console.log(`${it.ref}  ${short(it.title, 100)}${it.date ? ` (${short(it.date, 30)})` : ''}`);
@@ -478,14 +660,21 @@ async function search(query, opts) {
       const pixels = it.imageWidth && it.imageHeight ? `${it.imageWidth} × ${it.imageHeight}` : 'size unknown';
       const largest = it.width && it.height && it.width !== it.imageWidth ? `; largest ${it.width} × ${it.height}` : '';
       const sh = shape(it.width || it.imageWidth, it.height || it.imageHeight);
-      console.log(`  image    ${it.image}`);
-      console.log(`  size     ${pixels}${it.bytes ? `, ${size(it.bytes)}` : ''}${largest}${sh ? `; ${sh}` : ''}`);
-      if (it.smaller) console.log(`  smaller  ${it.smaller}`);
+      if (it.media === 'video') {
+        const facts = [pixels, it.duration ? clock(it.duration) : 'length unknown', it.bytes ? `${it.estimated ? 'about ' : ''}${size(it.bytes)}` : null, VIDEO_TYPES[it.mime]];
+        console.log(`  file     ${it.image}`);
+        console.log(`  size     ${facts.filter(Boolean).join(', ')}${largest}${sh ? `; ${sh}` : ''}`);
+        if (it.poster) console.log(`  poster   ${it.poster}`);
+      } else {
+        console.log(`  image    ${it.image}`);
+        console.log(`  size     ${pixels}${it.bytes ? `, ${size(it.bytes)}` : ''}${largest}${sh ? `; ${sh}` : ''}`);
+        if (it.smaller) console.log(`  smaller  ${it.smaller}`);
+      }
       console.log(`  page     ${it.page}`);
       const lu = licenceUrl(it);
       console.log(`  licence  ${licenceLabel(it)}${lu ? ` (${lu})` : ''}; ${creditRequired(it) ? 'credit required' : 'no credit required, credit anyway'}`);
       console.log(`  credit   ${credit(it)}`);
-      for (const n of [...it.notes, ...licenceNotes(it), ...(it.hint ? [it.hint] : [])]) console.log(`  note     ${n}`);
+      for (const n of [...(it.media === 'video' ? videoNotes(it, opts) : []), ...it.notes, ...licenceNotes(it), ...(it.hint ? [it.hint] : [])]) console.log(`  note     ${n}`);
     }
   }
   console.log('');
@@ -494,36 +683,61 @@ async function search(query, opts) {
     console.log('pictures instead (references/imagery.md) and say in your report that the open collections could not be searched.');
     return 1;
   }
+  if (!shown && opts.video) {
+    console.log('Nothing usable came back. Name the action or the process ("coffee roasting", "timber framing", "river"); use fewer');
+    console.log('words; try a smaller --min-width or another --source. A page does not need video: a still picture or a drawing is fine.');
+    return 1;
+  }
   if (!shown) {
     console.log('Nothing usable came back. Try fewer words; the place\'s own name for things ("azulejo", not "blue tile"); the place and a');
     console.log('medium ("ghent postcard", "ghent old map", "ghent engraving"); a decade ("rotterdam harbour 1920"); a smaller --min-width;');
     console.log('or another --source. The museum sources match one or two words best ("fig", "harbour"). If nothing honest exists, draw it.');
     return 1;
   }
-  console.log('Next. Look before you choose: --get downloads into the project and records the credit; open the file to see it.');
+  if (opts.video) console.log('Next. Watch before you choose: --get downloads the clip and a poster frame into the project and records the credit.');
+  else console.log('Next. Look before you choose: --get downloads into the project and records the credit; open the file to see it.');
   console.log(`  ${CMD} --get <ref>[,<ref>...]${o.toArg}`);
   console.log(`  ${CMD} --credits${o.toArg}     the footer credit line and the list for your report`);
-  console.log('These pictures show the subject\'s world. Never present one as the client\'s own product, room, dish, person or team.');
+  console.log(`These ${opts.video ? 'clips' : 'pictures'} show the subject's world. Never present one as the client's own product, room, dish, person or team.`);
   return 0;
 }
 
 // ---------- get ----------
 function creditsPath(opts) { return join(opts.to, 'credits.json'); }
 function readCredits(opts) { try { const j = JSON.parse(readFileSync(creditsPath(opts), 'utf8')); return Array.isArray(j) ? j : []; } catch { return []; } }
+// A file name in the target folder that is free, or already belongs to this same picture.
+function targetFile(opts, stem, ext, ref, credits) {
+  let file = join(opts.to, `${stem}.${ext}`);
+  for (let k = 2; existsSync(file) && credits.find((c) => c.file === rel(file))?.ref !== ref; k++) file = join(opts.to, `${stem}-${k}.${ext}`);
+  return file;
+}
+function recordCredit(opts, credits, entry) { writeFileSync(creditsPath(opts), JSON.stringify([...credits.filter((c) => c.file !== entry.file), entry], null, 1)); }
 async function getOne(ref, opts) {
-  const m = String(ref).match(/^(openverse|commons|aic|met):(.+)$/);
-  if (!m) throw new Error('a ref looks like openverse:<id>, commons:<id>, aic:<id> or met:<id>, as a search prints it.');
+  const m = String(ref).match(/^(openverse|commons|aic|met|archive|nasa):(.+)$/);
+  if (!m) throw new Error('a ref looks like openverse:<id>, commons:<id>, aic:<id>, met:<id>, archive:<id> or nasa:<id>, as a search prints it.');
   const [, src, id] = m;
   let it;
   if (src === 'openverse') { it = fromOpenverse(await getJson(`https://api.openverse.org/v1/images/${encodeURIComponent(id)}/`, 30000)); await wikimediaSizes([it], opts.width); }
-  else if (src === 'commons') { const j = await getJson(commonsApi({ pageids: id, ...commonsInfo(opts.width) })); it = fromCommons(j.query?.pages?.[0]); }
+  else if (src === 'commons') {
+    // the same ref form serves pictures and videos; the record says which
+    const j = await getJson(commonsApi({ pageids: id, ...commonsInfo(opts.width), iiprop: 'url|size|mime|mediatype|extmetadata', prop: 'imageinfo|videoinfo', viprop: 'derivatives' }));
+    const pg = j.query?.pages?.[0]; const ii = pg?.imageinfo?.[0];
+    it = ii && (ii.mediatype === 'VIDEO' || /^video\//.test(ii.mime || '')) ? fromCommonsVideo(pg, opts) : fromCommons(pg);
+  }
   else if (src === 'aic') { const j = await getJson(`https://api.artic.edu/api/v1/artworks/${encodeURIComponent(id)}?fields=${AIC_FIELDS.join(',')}`, 20000, AIC_HEADERS); it = fromAic(j.data, j.config?.iiif_url || 'https://www.artic.edu/iiif/2', opts.width); }
+  else if (src === 'archive') it = fromArchive(await getJson(`https://archive.org/metadata/${encodeURIComponent(id)}`, 30000), opts);
+  else if (src === 'nasa') {
+    const j = await getJson(`https://images-api.nasa.gov/search?${new URLSearchParams({ nasa_id: decodeURIComponent(id), media_type: 'video' })}`);
+    const x = j.collection?.items?.[0];
+    it = x ? fromNasa(x, await getJson(nasaUrl(x.href), 15000), opts) : null;
+  }
   else {
     it = fromMet(await getJson(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${encodeURIComponent(id)}`));
     if (it?.smaller) { const s = await probe(it.smaller); if (s.ok && s.w >= opts.width * 0.9) it.image = it.smaller; }
   }
-  if (!it || !it.image) throw new Error('no usable image (not public domain, or the record has no picture).');
+  if (!it || !it.image) throw new Error(`no usable ${['archive', 'nasa'].includes(src) ? 'video (no rendition a browser plays, or the record is gone)' : 'image (not public domain, or the record has no picture)'}.`);
   if (!opts.licences.includes(it.license)) throw new Error(`its licence is ${licenceLabel(it)}, outside the ones allowed (${opts.licences.join(', ')}). Pass --license all to take it anyway, and say why in your report.`);
+  if (it.media === 'video') return getVideo(it, src, id, opts);
   let r;
   try { r = await fetch(it.image, { headers: imageHeaders(it.image), signal: AbortSignal.timeout(90000) }); }
   catch (e) { throw new Error(`the image did not download (${e.name === 'TimeoutError' ? 'timed out' : e.cause?.code || e.message}).`); }
@@ -537,16 +751,15 @@ async function getOne(ref, opts) {
   mkdirSync(opts.to, { recursive: true });
   const credits = readCredits(opts);
   const stem = slug(args.name || it.title) || `${src}-${slug(id).slice(0, 12)}`;
-  let file = join(opts.to, `${stem}.${ext}`);
-  for (let k = 2; existsSync(file) && credits.find((c) => c.file === rel(file))?.ref !== it.ref; k++) file = join(opts.to, `${stem}-${k}.${ext}`);
+  const file = targetFile(opts, stem, ext, it.ref, credits);
   writeFileSync(file, buf);
   const entry = {
-    file: rel(file), ref: it.ref, title: it.title, creator: it.creator || null, creatorUrl: it.creatorUrl, date: it.date,
+    file: rel(file), media: 'image', ref: it.ref, title: it.title, creator: it.creator || null, creatorUrl: it.creatorUrl, date: it.date,
     license: licenceLabel(it), licenseCode: it.license, licenseUrl: licenceUrl(it), creditRequired: creditRequired(it),
     page: it.page, via: it.via, image: it.image, width: d.w || it.imageWidth, height: d.h || it.imageHeight, bytes: buf.length,
     credit: credit(it), notes: [...it.notes, ...licenceNotes(it)], saved: new Date().toISOString(),
   };
-  writeFileSync(creditsPath(opts), JSON.stringify([...credits.filter((c) => c.file !== entry.file), entry], null, 1));
+  recordCredit(opts, credits, entry);
   const alt = it.alt || it.title;
   console.log(`Saved ${entry.file}${entry.width ? ` · ${entry.width} × ${entry.height}` : ''} · ${size(buf.length)}`);
   console.log(`  page     ${it.page}`);
@@ -555,6 +768,60 @@ async function getOne(ref, opts) {
   console.log('           (rewrite the alt to say what the picture shows; drop loading="lazy" on the hero image)');
   for (const n of entry.notes) console.log(`  note     ${n}`);
 }
+// A clip: check its size against the cap first, stream it to disk (stopping at the cap), then save a still
+// frame from the source as its poster.
+async function getVideo(it, src, id, opts) {
+  const cap = opts.maxMb * 1048576;
+  const head = await probe(it.image, 20000, true);
+  if (!head.ok) throw new Error(`the video did not load (${head.why}).`);
+  const side = it.imageWidth && it.imageHeight ? Math.min(it.imageWidth, it.imageHeight) : 0;
+  if (head.bytes && head.bytes > cap) throw new Error(`the clip is ${size(head.bytes)}, over the ${opts.maxMb} MB cap. ${side > 480 ? 'Try --res 480 for a smaller rendition, or a shorter clip' : 'Choose a shorter clip'}; pass --max-mb ${Math.ceil(head.bytes / 1048576) + 1} only if the page really needs this one.`);
+  mkdirSync(opts.to, { recursive: true });
+  const credits = readCredits(opts);
+  const stem = slug(args.name || it.title) || `${src}-${slug(decodeURIComponent(id)).slice(0, 12)}`;
+  const file = targetFile(opts, stem, VIDEO_TYPES[head.type], it.ref, credits);
+  let r;
+  try { r = await fetch(it.image, { headers: { 'User-Agent': UA, Accept: 'video/*' }, signal: AbortSignal.timeout(600000) }); }
+  catch (e) { throw new Error(`the video did not download (${e.name === 'TimeoutError' ? 'timed out' : e.cause?.code || e.message}).`); }
+  if (!r.ok) throw new Error(`the video did not load (HTTP ${r.status}).`);
+  const out = createWriteStream(file); const first512 = []; let kept = 0; let n = 0;
+  try {
+    const reader = r.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      n += value.length;
+      if (n > cap) { reader.cancel().catch(() => {}); throw new Error(`the clip passed the ${opts.maxMb} MB cap while downloading; choose a shorter clip or pass a larger --max-mb.`); }
+      if (kept < 524288) { first512.push(value); kept += value.length; }
+      if (!out.write(value)) await new Promise((res) => out.once('drain', res));
+    }
+    await new Promise((res, rej) => out.end((e) => (e ? rej(e) : res())));
+  } catch (e) { out.destroy(); try { unlinkSync(file); } catch {} throw e; }
+  if (!n) { try { unlinkSync(file); } catch {} throw new Error('the video was empty.'); }
+  const info = head.type === 'video/mp4' ? mp4Info(Buffer.concat(first512)) : {};
+  const w = info.w || it.imageWidth; const h = info.h || it.imageHeight; const duration = info.duration || it.duration;
+  let poster = null;
+  if (it.poster) {
+    try {
+      const pr = await fetch(it.poster, { headers: imageHeaders(it.poster), signal: AbortSignal.timeout(60000) });
+      const pt = (pr.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+      if (pr.ok && WEB_TYPES[pt]) { poster = file.replace(/\.[^.]+$/, `-poster.${WEB_TYPES[pt]}`); writeFileSync(poster, Buffer.from(await pr.arrayBuffer())); }
+    } catch { poster = null; }
+  }
+  const entry = {
+    file: rel(file), media: 'video', poster: poster ? rel(poster) : null, ref: it.ref, title: it.title, creator: it.creator || null, creatorUrl: it.creatorUrl, date: it.date,
+    license: licenceLabel(it), licenseCode: it.license, licenseUrl: licenceUrl(it), creditRequired: creditRequired(it),
+    page: it.page, via: it.via, video: it.image, width: w || null, height: h || null, duration: duration ? Math.round(duration * 10) / 10 : null, bytes: n,
+    credit: credit(it), notes: [...it.notes, ...licenceNotes(it), ...videoNotes({ ...it, bytes: n, duration }, opts)], saved: new Date().toISOString(),
+  };
+  recordCredit(opts, credits, entry);
+  console.log(`Saved ${entry.file}${w ? ` · ${w} × ${h}` : ''}${duration ? ` · ${clock(duration)}` : ''} · ${size(n)}`);
+  console.log(`  poster   ${entry.poster || 'none from the source: export a still frame yourself, or use a found picture'}`);
+  console.log(`  page     ${it.page}`);
+  console.log(`  credit   ${entry.credit}`);
+  console.log(`  markup   <video autoplay muted loop playsinline preload="metadata"${entry.poster ? ` poster="${esc(entry.poster)}"` : ''}${w ? ` width="${w}" height="${h}"` : ''} aria-hidden="true"><source src="${esc(entry.file)}" type="${head.type}"></video>`);
+  console.log('           (a silent loop is decoration: pause it or show the poster under prefers-reduced-motion; references/imagery.md "Video")');
+  for (const x of entry.notes) console.log(`  note     ${x}`);
+}
 async function getAll(refs, opts) {
   let failed = 0;
   for (const ref of refs) {
@@ -562,7 +829,7 @@ async function getAll(refs, opts) {
     console.log('');
   }
   if (failed < refs.length) {
-    console.log(`Credits are recorded in ${rel(creditsPath(opts))}. Look at each picture before using it.`);
+    console.log(`Credits are recorded in ${rel(creditsPath(opts))}. Look at each picture and watch each clip before using it.`);
     console.log(`Print the footer credits and the report list with: ${CMD} --credits${opts.toArg}`);
   }
   return failed ? 1 : 0;
@@ -579,11 +846,13 @@ function printCredits(opts) {
     const lic = c.licenseUrl ? `<a href="${esc(c.licenseUrl)}">${esc(c.license)}</a>` : esc(c.license);
     return `<a href="${esc(c.page)}">“${esc(short(c.title, 90))}”</a>${by}${date}, ${lic}, via ${esc(c.via)}`;
   };
+  const media = new Set(uniq.map((c) => c.media || 'image'));
+  const label = media.size > 1 ? 'Pictures and footage' : media.has('video') ? 'Footage' : 'Pictures';
   console.log('Footer credits (HTML). Full contrast, keep the links, body size (one step smaller only on a page with plenty of');
-  console.log('running text). Remove any picture the page no longer uses, here and in credits.json.\n');
-  console.log(`<p class="credits">Pictures: ${uniq.map(html).join('; ')}.</p>`);
+  console.log('running text). Remove anything the page no longer uses, here and in credits.json.\n');
+  console.log(`<p class="credits">${label}: ${uniq.map(html).join('; ')}.</p>`);
   console.log('\nFor your report:\n');
-  for (const c of uniq) console.log(`- ${c.file}: ${c.credit}. ${c.page}${c.creditRequired ? '' : ' (no credit required)'}`);
+  for (const c of uniq) console.log(`- ${c.file}${c.media === 'video' && c.duration ? ` (video, ${clock(c.duration)})` : ''}: ${c.credit}. ${c.page}${c.creditRequired ? '' : ' (no credit required)'}`);
   return 0;
 }
 

@@ -15,19 +15,27 @@ Read this before adding any animation. The static page must already be finished 
 
 ## 1. The budget
 
-A marketing page gets **one signature moment** and a layer of **quiet feedback**. That is the whole
-budget.
+A page that does not move reads as a mock-up; the inspector counts what moves while the page loads and
+scrolls, and fails it under eight elements. The motion layer has four parts:
 
-- The signature moment is the thing a visitor would describe an hour later: the headline that rises
+- **One signature moment:** the thing a visitor would describe an hour later: the headline that rises
   out of a mask, the image that opens like a shutter, the wordmark that scales with the scroll. The
-  direction sheet from `draw.mjs` names one. Build that one well.
-- Feedback is what makes the page feel alive under the hand: buttons that give on press, links that
-  answer the pointer, a menu that opens from where it was clicked.
-- Everything else arrives without ceremony. A paragraph does not need an entrance.
+  direction sheet from `draw.mjs` names one. Build that one well; it is the only move allowed to be
+  loud.
+- **Section entrances, choreographed per section:** the parts of each section arrive in reading order
+  (heading, text, picture, details), staggered 60–90ms, rising 16–32px with opacity, once. Vary the
+  manner with the content instead of stamping one preset everywhere: a list arrives row by row, a
+  picture opens from a mask or settles from a slight scale, a figure counts up once, a statement rises
+  line by line.
+- **Feedback under the hand:** buttons that give on press, links that answer the pointer, cards and
+  pictures that respond on hover, a menu that opens from where it was clicked.
+- **One moving picture:** a found clip as a muted loop with a poster frame, a slow drift or scale on
+  a large photograph, or a scroll-linked move on the hero picture.
 
-Why so strict: fade-and-slide-up on every section with identical timing is the single most cited motion
-tell of generated pages, and curated gallery sites almost never do it. Uniform motion says nobody
-decided anything. One protected moment says somebody did.
+What is still banned: the same fade-and-slide-up with the same timing on every block, which is the most
+cited motion tell of generated pages; motion that hides content until a script runs, with no fallback;
+bounce and elastic easing; anything that animates layout properties. Uniform motion says nobody decided
+anything; choreographed motion with one protected moment says somebody did.
 
 ## 2. Four questions before any animation
 
