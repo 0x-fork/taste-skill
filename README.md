@@ -15,10 +15,10 @@
 </p>
 
 <p align="center">
-  <a href="https://tastecode.dev"><img src="assets/readme-tastecode.webp" alt="TasteCode is here. A new home for your coding agents, with a design agent built in. Visit tastecode.dev" width="100%" /></a>
+  <a href="https://tastecode.dev"><img src="assets/readme-tastecode.webp" alt="TasteCode is here. Taste Skill as a desktop app, with a design agent built in. Free and open source. Download at tastecode.dev" width="100%" /></a>
 </p>
 
-<p align="center"><sub>From the Taste Skill team: <a href="https://tastecode.dev"><strong>TasteCode</strong></a>, a local desktop workspace for Codex, Claude Code and Grok with a design agent that briefs, builds and visually reviews your UI. <a href="https://github.com/Leonxlnx/tastecode">Source on GitHub</a>.</sub></p>
+<p align="center"><sub>The easiest way to get Taste Skill results: <a href="https://tastecode.dev"><strong>download TasteCode</strong></a>. Its design agent briefs, builds and visually reviews your UI. <a href="https://github.com/Leonxlnx/tastecode">Source on GitHub</a>.</sub></p>
 
 <h3 align="center">Sponsors</h3>
 
@@ -69,7 +69,7 @@ Same brief, same agent, same prompt. Without the skill on the left, with it on t
   </tr>
 </table>
 
-Across four briefs built both ways, the pages without the skill had 37 small labels above headings, 249 hairline rules and no photographs. The pages with it had none of the labels, none of the rules and 48 real photographs. More pairs are under [Examples](#examples).
+Across four briefs built both ways, the pages without the skill had 37 small labels above headings, 249 hairline rules and no photographs. The pages with it had none of the labels, none of the rules and 48 real photographs. The photographs are real, found in open archives and credited by the skill ([credits](examples/v2/CREDITS.md)). Watch the [launch film](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="MIT License" /></a>
@@ -81,7 +81,7 @@ Across four briefs built both ways, the pages without the skill had 37 small lab
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-view-24292f?style=flat" alt="Changelog" /></a>
 </p>
 
-<p align="center"><sub><a href="#install">Install</a> · <a href="#how-v2-works">How it works</a> · <a href="#examples">Examples</a> · <a href="#skills">Skills</a> · <a href="#common-questions">FAQ</a> · <a href="#support-the-project">Sponsors</a> · <a href="#license">License</a></sub></p>
+<p align="center"><sub><a href="#install">Install</a> · <a href="#how-v2-works">How it works</a> · <a href="#skills">Skills</a> · <a href="#common-questions">FAQ</a> · <a href="#support-the-project">Sponsors</a> · <a href="#license">License</a></sub></p>
 
 ## Install
 
@@ -144,18 +144,6 @@ The default skill, `taste-skill`, is new in v2. It is built from a study of 247 
 6. **Look and fix.** The agent critiques its own screenshots, fixes the top three problems and repeats, up to three rounds.
 
 A build takes an agent roughly 30 to 45 minutes and a few hundred thousand tokens. The full write-up is in [CHANGELOG.md](CHANGELOG.md) and the study is in [`references/research.md`](skills/taste-skill/references/research.md).
-
-## Examples
-
-Four briefs, each built once without the skill and once with it. Nothing else changed.
-
-| Without | With taste-skill v2 |
-| --- | --- |
-| <img src="examples/v2/night-without.webp" alt="Techno night page without the skill" /> | <img src="examples/v2/night-with.webp" alt="Techno night page with the skill" /> |
-| <img src="examples/v2/studio-without.webp" alt="Architecture studio page without the skill" /> | <img src="examples/v2/studio-with.webp" alt="Architecture studio page with the skill" /> |
-| <img src="examples/v2/legal-without.webp" alt="Contract tool page without the skill" /> | <img src="examples/v2/legal-with.webp" alt="Contract tool page with the skill" /> |
-
-The pictures on the right are real photographs from open archives, found and credited by the skill. Their credits are in [`examples/v2/CREDITS.md`](examples/v2/CREDITS.md). The launch film is attached to the [v2.0.0 release](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
 
 ## Skills
 
