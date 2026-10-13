@@ -4,7 +4,7 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ---
 
-## [Unreleased]
+## 2.0.0 - 2026-10-13
 
 ### Repo
 
@@ -12,6 +12,10 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 - The previous default, v2 (experimental), is preserved as `taste-skill-v2-experimental` (install name `design-taste-frontend-v2-experimental`).
 - v1 is unchanged at `taste-skill-v1` (install name `design-taste-frontend-v1`).
 - `CHANGELOG.md` (this file).
+- Codex can install the collection as a plugin (`.codex-plugin/`, `.agents/plugins/`).
+- Plugin manifests are at 2.0.0.
+- `skill.sh` accepts install names as well as folder names.
+- Removed: unused sponsor and README images, the one-off asset scripts in `scripts/`, and the old Copilot instructions, which contradicted v2.
 
 ---
 
