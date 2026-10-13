@@ -62,16 +62,20 @@
 
 **Taste Skill** is a set of Agent Skills that make coding agents design websites instead of assembling the average landing page. The default skill gives the agent an art direction, real pictures and a way to check its own work in a real browser.
 
-Same brief, same agent, same prompt. Without the skill on the left, with it on the right:
+Pages it has built, each from one brief:
 
 <table>
   <tr>
-    <td width="50%"><img src="examples/v2/coffee-without.webp" alt="Coffee shop page built without the skill" /></td>
-    <td width="50%"><img src="examples/v2/coffee-with.webp" alt="The same coffee shop brief built with the skill" /></td>
+    <td width="50%"><img src="examples/v2/coffee-storefront.webp" alt="Coffee shop page with a drawn storefront as its hero" /></td>
+    <td width="50%"><img src="examples/v2/night-dates.webp" alt="Techno night page with its dates set into an archive photograph" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="examples/v2/coffee-roast.webp" alt="Coffee shop page section showing the roast in four photographs" /></td>
+    <td width="50%"><img src="examples/v2/coffee-questions.webp" alt="Coffee shop page questions as stacked index cards" /></td>
   </tr>
 </table>
 
-Across four briefs built both ways, the pages without the skill had 37 small labels above headings, 249 hairline rules and no photographs. The pages with it had none of the labels, none of the rules and 48 real photographs. The photographs are real, found in open archives and credited by the skill ([credits](examples/v2/CREDITS.md)). Watch the [launch film](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
+The photographs are real, found in open archives and credited by the skill ([credits](examples/v2/CREDITS.md)). Watch the [launch film](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
 
 <p align="center"><sub><a href="#install">Install</a> · <a href="#how-v2-works">How it works</a> · <a href="#skills">Skills</a> · <a href="#common-questions">FAQ</a> · <a href="#support-the-project">Sponsors</a> · <a href="#license">License</a></sub></p>
 
