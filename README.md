@@ -113,6 +113,17 @@ Run these inside Claude Code:
 
 Run `/plugin update` later to upgrade installed plugins to new versions. Claude Code also checks for updates automatically at startup.
 
+### Install as a Codex plugin
+
+Codex users can install the complete skill collection as one marketplace plugin:
+
+```bash
+codex plugin marketplace add Leonxlnx/taste-skill
+codex plugin add taste-skill@taste-skill
+```
+
+Start a new Codex session after installation so the bundled skills are loaded.
+
 ### Updating from the previous version
 
 The default `taste-skill` (install name `design-taste-frontend`) is now **v2**: a new skill built from a study of 247 curated gallery sites, with a library of researched directions, a script that deals them, and a real-browser inspector that measures the anti-slop rules. If you already have the skill installed, re-run the install command and you will be upgraded:
