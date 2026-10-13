@@ -2,16 +2,18 @@
   <img src="assets/readme-banner.webp" alt="Taste Skill - Anti-slop Agent Skills for premium frontends" width="100%" />
 </p>
 
-<h1 align="center">Taste Skill</h1>
-
-<p align="center">
-  <em>Anti-slop design skills for coding agents</em>
-</p>
-
 <p align="center" style="margin-bottom: 8px;">
   <a href="https://tasteskill.dev" title="Visit tasteskill.dev"><img src="https://img.shields.io/badge/website-tasteskill.dev-24292f?style=flat" alt="Visit tasteskill.dev" /></a>
   &nbsp;
   <a href="https://tastecode.dev" title="Visit tastecode.dev"><img src="https://img.shields.io/badge/new-TasteCode-ff6b00?style=flat" alt="New: TasteCode" /></a>
+  &nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="MIT License" /></a>
+  &nbsp;
+  <a href="https://github.com/vercel-labs/agent-skills"><img src="https://img.shields.io/badge/Agent_Skills-compatible-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="Agent Skills compatible" /></a>
+  &nbsp;
+  <a href="#install"><img src="https://img.shields.io/badge/Codex_%2F_Cursor_%2F_Claude-install-24292f?style=flat" alt="Codex, Cursor, Claude" /></a>
+  &nbsp;
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-view-24292f?style=flat" alt="Changelog" /></a>
 </p>
 
 <p align="center">
@@ -71,16 +73,6 @@ Same brief, same agent, same prompt. Without the skill on the left, with it on t
 
 Across four briefs built both ways, the pages without the skill had 37 small labels above headings, 249 hairline rules and no photographs. The pages with it had none of the labels, none of the rules and 48 real photographs. The photographs are real, found in open archives and credited by the skill ([credits](examples/v2/CREDITS.md)). Watch the [launch film](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="MIT License" /></a>
-  &nbsp;
-  <a href="https://github.com/vercel-labs/agent-skills"><img src="https://img.shields.io/badge/Agent_Skills-compatible-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="Agent Skills compatible" /></a>
-  &nbsp;
-  <a href="#install"><img src="https://img.shields.io/badge/Codex_%2F_Cursor_%2F_Claude-install-24292f?style=flat" alt="Codex, Cursor, Claude" /></a>
-  &nbsp;
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-view-24292f?style=flat" alt="Changelog" /></a>
-</p>
-
 <p align="center"><sub><a href="#install">Install</a> · <a href="#how-v2-works">How it works</a> · <a href="#skills">Skills</a> · <a href="#common-questions">FAQ</a> · <a href="#support-the-project">Sponsors</a> · <a href="#license">License</a></sub></p>
 
 ## Install
@@ -134,28 +126,27 @@ Already have the skill? Run the install command again. The install name did not 
 
 ## How v2 works
 
-The default skill, `taste-skill`, is new in v2. It is built from a study of 247 curated sites and it is a folder: instructions, references, a library and four scripts. A build runs in six steps.
+The default skill is built from a study of 247 curated sites. A build runs in six steps:
 
-1. **Read the brief.** The agent lists what only this client has: the name and what it means, the street, the numbers, the one constraint.
-2. **Draw a direction.** A script deals three of 20 researched directions. The agent picks the one that can carry something from that list, and the script deals the rest: a hero, section layouts, a type system, a palette, a motion.
-3. **Find the idea.** One sentence that ties the client's own material to the direction, checked against the nearest competitor, plus one thing the visitor can do on the page.
-4. **Build with real pictures.** When the project has no photographs, a script finds real pictures and footage of the subject's world in open collections, downloads them and records the credits. Only what no honest picture exists of is drawn in code.
-5. **Check it in a real browser.** An inspector opens the page at 1440, 768 and 390 px and fails it on eyebrow labels, hairlines, gradients, resting shadows, headlines over two lines, empty screens and covered text.
-6. **Look and fix.** The agent critiques its own screenshots, fixes the top three problems and repeats, up to three rounds.
+1. Reads the brief and lists what only this client has.
+2. A script deals three of 20 researched directions and the agent picks one.
+3. Finds the idea: one sentence tying the client's own material to that direction.
+4. Builds with real pictures and footage from open collections, credited.
+5. Checks the page in a real browser at three widths and fails it on slop.
+6. Looks at its own screenshots and fixes the top three problems, up to three rounds.
 
-A build takes an agent roughly 30 to 45 minutes and a few hundred thousand tokens. The full write-up is in [CHANGELOG.md](CHANGELOG.md) and the study is in [`references/research.md`](skills/taste-skill/references/research.md).
+A build takes roughly 30 to 45 minutes and a few hundred thousand tokens. Details are in the [changelog](CHANGELOG.md) and the [study](skills/taste-skill/references/research.md).
 
 ## Skills
 
 Each skill does one job. You do not need all of them. The **install name** is the value you pass to `--skill`.
 
-### The default
-
 | Skill | Install name | What it does |
 | --- | --- | --- |
 | **[taste-skill](skills/taste-skill/SKILL.md)** | `design-taste-frontend` | v2. Art direction for landing pages, marketing sites, portfolios and product pages, in any stack. Works as described above. |
 
-### For a specific job
+<details>
+<summary>Skills for a specific job (8)</summary>
 
 | Skill | Install name | What it does |
 | --- | --- | --- |
@@ -168,7 +159,10 @@ Each skill does one job. You do not need all of them. The **install name** is th
 | **[stitch-skill](skills/stitch-skill/SKILL.md)** | `stitch-design-taste` | Rules for Google Stitch, with an optional `DESIGN.md` export. |
 | **[output-skill](skills/output-skill/SKILL.md)** | `full-output-enforcement` | For when the model ships half-finished work: full output, no placeholder comments. |
 
-### Image generation
+</details>
+
+<details>
+<summary>Image generation skills (3)</summary>
 
 These produce design images only, no code. Use them with ChatGPT Images, Codex image mode or any agent that generates images, then hand the frames to your coding agent.
 
@@ -177,6 +171,8 @@ These produce design images only, no code. Use them with ChatGPT Images, Codex i
 | **[imagegen-frontend-web](skills/imagegen-frontend-web/SKILL.md)** | `imagegen-frontend-web` | Website comps: hero, landing page, multi-section. |
 | **[imagegen-frontend-mobile](skills/imagegen-frontend-mobile/SKILL.md)** | `imagegen-frontend-mobile` | Mobile screens and flows for iOS, Android and cross-platform. |
 | **[brandkit](skills/brandkit/SKILL.md)** | `brandkit` | Brand-kit boards: logo directions, palettes, type, applications. |
+
+</details>
 
 ### Which one should I use?
 
@@ -207,26 +203,17 @@ Both have three 1 to 10 dials at the top of the file: **DESIGN_VARIANCE** (centr
 
 ## Common Questions
 
+**What does the default skill need?**  
+Node 22 or newer and Chrome, Edge or Chromium. It installs nothing and uses no API keys. It needs the internet only to find pictures.
+
+**Where do the pictures come from, and can I use them?**  
+From open collections such as Wikimedia Commons, Openverse and the Met. Only public domain, CC0, CC BY and CC BY-SA files are offered, and the skill puts the credits on the page. Replace them with your own when you have them.
+
 **Does it work with React, Vue, Svelte, plain HTML?**  
 Yes. The rules are about design, not a framework.
 
-**What does the default skill need on my machine?**  
-Node 22 or newer and Chrome, Edge or Chromium. It installs nothing and uses no API keys. Without Node 22 or a browser the agent can still follow the instructions, but the inspector cannot run.
-
-**Where do the pictures come from, and can I use them?**  
-From open collections: Openverse, Wikimedia Commons, the Art Institute of Chicago and the Met. By default the skill only offers public domain, CC0, CC BY and CC BY-SA files, records the title, creator, licence and source of every download, and puts the credits on the page. They are pictures of the subject's world, not of your product. Replace them with your own when you have them.
-
-**Does it need the internet?**  
-Only to find pictures and footage. Without it the agent draws what it needs and says so in its report.
-
 **Is it for dashboards and app screens?**  
 No. The default skill is for public-facing pages. Use **minimalist-skill** or **soft-skill** for product UI.
-
-**What is a SKILL.md?**  
-An instruction file an agent loads on its own when the task fits. Install it with `npx skills add`, or copy a single-file skill into your project or a conversation.
-
-**How is this different from other design skills?**  
-The default skill does not ask the model to invent a look, because a model asked to invent picks the category default every time. A script deals researched directions, a real browser measures the result, and the agent has to look at its own screenshots before it is done.
 
 ## Support the project
 
@@ -247,7 +234,8 @@ If Taste Skill helps you, consider sponsoring:
   </tr>
 </table>
 
-### Community Sponsors
+<details>
+<summary>Community sponsors</summary>
 
 <a href="https://github.com/dnakov"><img src="https://github.com/dnakov.png" width="40" height="40" style="border-radius:50%" alt="dnakov" title="dnakov" /></a>
 <a href="https://github.com/AkramReshad"><img src="https://github.com/AkramReshad.png" width="40" height="40" style="border-radius:50%" alt="AkramReshad" title="AkramReshad" /></a>
@@ -282,21 +270,11 @@ If Taste Skill helps you, consider sponsoring:
  </a>
 </p>
 
-## Research
+</details>
 
-The default skill rests on a study of 247 curated sites: method, numbers and blind tests are in [`skills/taste-skill/references/research.md`](skills/taste-skill/references/research.md). Earlier background writing lives in [`research/`](research/).
+<sub>Feedback: open an issue or pull request, DM [@lexnlin](https://x.com/lexnlin) or [@blueemi99](https://x.com/blueemi99), or email [hello@tasteskill.dev](mailto:hello@tasteskill.dev).</sub>
 
-## Feedback & Contributions
-
-Suggestions and bug reports are welcome:
-
-- Open an issue or a pull request on GitHub
-- DM [@lexnlin](https://x.com/lexnlin) or [@blueemi99](https://x.com/blueemi99)
-- Email [hello@tasteskill.dev](mailto:hello@tasteskill.dev)
-
-## Disclaimer
-
-Taste Skill has no official token, coin, or crypto project. Any token using my name, image, or project is unaffiliated and not endorsed by me.
+<sub>Taste Skill has no official token, coin, or crypto project. Any token using my name, image, or project is unaffiliated and not endorsed by me.</sub>
 
 ## License
 
