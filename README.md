@@ -98,7 +98,7 @@ Install a single skill by its **install name** (the `name:` field inside the SKI
 npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
 ```
 
-You can also copy any `SKILL.md` into your project or paste it into ChatGPT / Codex conversations.
+You can also copy any single-file `SKILL.md` into your project or paste it into ChatGPT / Codex conversations. The default `taste-skill` is a folder (instructions, a library and scripts) and is installed as a whole.
 
 ### Install as a Claude Code plugin
 
@@ -115,21 +115,25 @@ Run `/plugin update` later to upgrade installed plugins to new versions. Claude 
 
 ### Updating from the previous version
 
-The default `taste-skill` (install name `design-taste-frontend`) is now **v2 (experimental)**, a substantial rewrite of the original v1. If you already have v1 installed, just re-run the install command and you will be upgraded:
+The default `taste-skill` (install name `design-taste-frontend`) is now **v2**: a new skill built from a study of 247 curated gallery sites, with a library of researched directions, a script that deals them, and a real-browser inspector that measures the anti-slop rules. If you already have the skill installed, re-run the install command and you will be upgraded:
 
 ```bash
 npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
 ```
 
-The install name did not change, so no script updates are needed. The newer SKILL.md replaces the older one in place.
+The install name did not change, so no script updates are needed. v2 runs its scripts with Node 22+ and an installed Chrome, Edge or Chromium; it installs nothing.
 
-If you depend on the exact behavior of v1 and want to pin to it explicitly:
+The older versions stay available under their own names:
 
 ```bash
+# old v2 (experimental): the single-file dial-driven rewrite that was the default before
+npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend-v2-experimental"
+
+# old v1: the original
 npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend-v1"
 ```
 
-See [CHANGELOG.md](CHANGELOG.md) for the full v1 to v2 diff and the rationale.
+See [CHANGELOG.md](CHANGELOG.md) for what changed and why.
 
 ## Skills
 
@@ -139,8 +143,9 @@ The `Install name` column is the exact value you pass to `--skill`.
 
 | Skill (folder) | Install name | Description |
 | --- | --- | --- |
-| **[taste-skill](skills/taste-skill/SKILL.md)** | `design-taste-frontend` | 🆕 **v2 (experimental)** - substantial rewrite of the default skill. Reads the brief, infers the design language, tunes three dials (VARIANCE / MOTION / DENSITY). Brief inference, design-system map, hard em-dash ban, canonical GSAP code skeletons, redesign-audit protocol, strict pre-flight check. Actively iterating toward v2.0.0 stable. |
-| **[taste-skill-v1](skills/taste-skill-v1/SKILL.md)** | `design-taste-frontend-v1` | The original v1 of taste-skill, preserved for projects depending on its exact behavior. Use only if the v2 default breaks something specific in your workflow. |
+| **[taste-skill](skills/taste-skill/SKILL.md)** | `design-taste-frontend` | 🆕 **v2** - the default. Art direction from a study of 247 gallery sites: the agent inventories what only the client has, a script deals three researched directions to choose from (20 directions, 48 heroes, 172 section layouts, 44 type systems, 56 palettes), and a real-browser inspector fails the page on eyebrows, monospace labels, 01/02/03 numbering, hairlines, gradients, resting shadows, cream-and-terracotta, violet, headlines over two lines, empty screens and covered text. Ends with a look-and-fix loop on its own screenshots. Needs Node 22+ and Chrome. |
+| **[taste-skill-v2-experimental](skills/taste-skill-v2-experimental/SKILL.md)** | `design-taste-frontend-v2-experimental` | Old v2 (experimental): the single-file, dial-driven rewrite (VARIANCE / MOTION / DENSITY) that was the default before v2. Kept for projects that depend on it. |
+| **[taste-skill-v1](skills/taste-skill-v1/SKILL.md)** | `design-taste-frontend-v1` | Old v1: the original taste-skill, preserved for projects depending on its exact behavior. |
 | **[gpt-tasteskill](skills/gpt-tasteskill/SKILL.md)** | `gpt-taste` | Stricter variant for GPT/Codex: higher layout variance, stronger GSAP direction, aggressive anti-slop. |
 | **[image-to-code-skill](skills/image-to-code-skill/SKILL.md)** | `image-to-code` | Image-first pipeline: generate site references, analyze them, then implement the frontend to match. |
 | **[redesign-skill](skills/redesign-skill/SKILL.md)** | `redesign-existing-projects` | Existing projects: audit the UI first, then fix layout, spacing, hierarchy, styling. |
@@ -162,8 +167,8 @@ These produce design images only (no code). Use with ChatGPT Images, Codex image
 
 ### Which one should I use?
 
-- Start with **taste-skill** for the safest general default. (Now v2 experimental - see what changed in the [CHANGELOG](CHANGELOG.md).)
-- If you depend on the exact behavior of the original taste-skill, install **taste-skill-v1** instead. 
+- Start with **taste-skill** for the general default. (Now v2 - see what changed in the [CHANGELOG](CHANGELOG.md).)
+- If you depend on the exact behavior of an older version, install **taste-skill-v2-experimental** or **taste-skill-v1** instead. 
 - Use **gpt-taste** when you want the stricter GPT/Codex-oriented rules and motion/layout enforcement. 
 - Use **image-to-code-skill** for image → analyze → code website workflows. 
 - Use **redesign-skill** to improve an existing codebase instead of greenfield styling. 
@@ -180,6 +185,8 @@ For **image-to-code-skill**, state the pipeline in the prompt, e.g.: `follow the
 Attach or paste **`imagegen-frontend-web`**, **`imagegen-frontend-mobile`**, or **`brandkit`** and ask for the frames you need, then feed the renders to Codex, Cursor, or Claude Code. Use **image-to-code-skill** when you want one workflow that both generates references and implements the site in code.
 
 ## Settings (taste-skill only)
+
+These dials belong to the older single-file versions (**taste-skill-v2-experimental** and **taste-skill-v1**). v2 has no dials: its direction comes from the draw (`--tone`, `--have`, `--keep`) and its limits from the inspector.
 
 Numbers at the top of the file are 1-10 dials:
 
