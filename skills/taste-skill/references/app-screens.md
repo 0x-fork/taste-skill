@@ -53,6 +53,29 @@ the same every time, and each is now a rule below:
 Quiet is the starting point, not the goal. A screen that a person would trust shows more of the
 product than a template does: its people, its objects, its numbers and the one thing to do next.
 
+**Give the product a face.** After three rounds the judges' last complaint was the same on most
+screens: "a well-applied kit, not a product with its own identity". The style's tokens make a screen
+correct; these make it this product's:
+
+- **The dealt typeface, really loaded.** A build that fell back to the default face landed on the
+  default look; the inspector now fails it.
+- **The product's mark and name** at the top of the shell, drawn for this product (a simple
+  monogram or symbol in the accent, from its name or its object), never a black square with a letter.
+- **One element only this product has**, built from its own things: the pace groups of a running
+  club as a unit chart, the couple as three lanes, a deploy's commit as the hero of the overview, the
+  family's car on tonight's charging window. Name it in your notes next to the screen's question.
+- **Its people and objects as themselves**: each person gets a stable initial and hue (at least 60
+  degrees from the next), products show their thumbnails, cover art shows the cover.
+- **Words of the trade** in labels and empty states ("Waiting on the customer", "Off sick", "Due
+  on the 28th"), never the generic noun of a template ("Items", "Records", "Status").
+
+**Calendars and timelines** (house rule, from testing; the study has none). People down the left on a
+fixed 160-220px column, days across with today marked by a 1px accent line and weekends one tone
+step darker; bars 20-24px tall on a 32-40px row pitch with radius 4; routine bookings in a pale
+neutral fill with ink text, the kind of leave or work told apart by a 3px left edge in its hue or a
+glyph, and colour at full strength only for what needs a decision (a request breaking cover). Every
+colour drawn is in the legend.
+
 ## Contents
 
 1. When this applies

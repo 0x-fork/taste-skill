@@ -72,8 +72,9 @@ function dealShell(style, input, exclude = []) {
 }
 function dealScreen(name, style, input, exclude = []) {
   let pool = LIB.patterns.filter((p) => p.screen === name && !exclude.includes(p.id));
-  const fit = pool.filter((p) => !p.kinds || p.kinds.includes(input.kind));
-  if (fit.length) pool = fit;
+  // a pattern written for another kind of product brings that product's furniture with it (a getting-started strip on a
+  // leave planner): when none fits this kind, the sheet says to compose the screen from the chapter instead
+  pool = pool.filter((p) => !p.kinds || p.kinds.includes(input.kind));
   return pool.length ? pick(pool) : null;
 }
 function deal(input) {

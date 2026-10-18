@@ -10,7 +10,8 @@
 //   Charts.barList(el, [{ label: 'Berlin', value: 412 }, …], { format })  a ranked list where the row is the bar
 //   Charts.plan(el, [{ label: 'Groceries', planned: 600, spent: 412, committed: 60 }, …], { scale: 'row' | 'plan' })  planned against spent
 //   Charts.bullet(el, [{ label: 'Bonds', value: 0.31, target: 0.25 }, …])   share against a target
-//   line/bars also take annotations: [{ at: index, label: 'Deploy a3f09c1' }] and reference: { value, label }
+//   line/bars also take annotations: [{ at: index, label: 'Deploy a3f09c1' }] or spans [{ from, to, label: 'Cloud' }],
+//   and reference: { value, label, at: 'left' | 'right' } (put the label where no series passes)
 //   line takes step: true for a balance that only changes on given days; today: index (the forecast after it is dashed);
 //   endLabel: true (the last value at the line's end); max: caps a flat series with one spike (the peak is labelled)
 // Every chart gets role="img" and an aria-label that states what it shows.
@@ -48,7 +49,7 @@
     if (!t) { t = document.createElement('div'); t.className = 'chart-tip'; t.style.cssText = 'position:absolute;pointer-events:none;padding:6px 8px;font:inherit;font-size:12px;line-height:1.35;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity 120ms ease;background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--grid,#e5e7eb)'; if (getComputedStyle(el).position === 'static') el.style.position = 'relative'; el.appendChild(t); }
     return t;
   }
-  function axes(g, { w, h, padL, padB, padT, yt, y, xLabels, x, el }) {
+  function axes(g, { w, h, padL, padB, padT, yt, y, xLabels, x, el, band = false }) {
     const grid = css(el, '--grid', '#e8e8e8'), ink = css(el, '--axis-ink', '#6b6b6b');
     for (const v of yt) {
       const yy = y(v);
@@ -56,13 +57,18 @@
       const t = svg('text', { x: padL - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': 12, fill: ink }, g); t.textContent = el._fmt(v);
     }
     const n = xLabels.length, every = n <= 8 ? 1 : Math.max(1, Math.ceil(n / 6));
-    xLabels.forEach((lab, i) => { if (i % every && i !== n - 1) return; if (i === n - 1 && (n - 1) % every && (n - 1) % every < every / 2) return; const t = svg('text', { x: x(i), y: h - padB + 18, 'text-anchor': i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle', 'font-size': 12, fill: ink }, g); t.textContent = lab; });
+    xLabels.forEach((lab, i) => { if (i % every && i !== n - 1) return; if (i === n - 1 && (n - 1) % every && (n - 1) % every < every / 2) return; const t = svg('text', { x: x(i), y: h - padB + 18, 'text-anchor': band ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle', 'font-size': 12, fill: ink }, g); t.textContent = lab; });
   }
   // Marks that explain the data: a 1px tick with a short label at an index (a deploy, a campaign), and a
   // dashed reference line with its label at the right end (a budget, an SLO, a start time).
   function notes(g, el, { annotations = [], reference = null, x, y, padT, h, padB, w, padL }) {
     const ink = css(el, '--axis-ink', '#6b6b6b');
-    for (const a of annotations) {
+    for (const a of annotations.filter((a) => a.from != null)) {
+      const x0 = x(a.from), x1 = x(a.to);
+      svg('rect', { x: Math.min(x0, x1), y: padT, width: Math.abs(x1 - x0), height: h - padT - padB, fill: ink, opacity: 0.07 }, g);
+      if (a.label) { const t = svg('text', { x: (x0 + x1) / 2, y: padT + 10, 'text-anchor': 'middle', 'font-size': 11, fill: ink }, g); t.textContent = a.label; }
+    }
+    for (const a of annotations.filter((a) => a.at != null)) {
       const xx = x(a.at);
       svg('line', { x1: xx, x2: xx, y1: padT, y2: h - padB, stroke: ink, 'stroke-width': 1, opacity: 0.45, 'shape-rendering': 'crispEdges' }, g);
       if (a.label) { const t = svg('text', { x: xx + 4, y: padT + 10, 'font-size': 11, fill: ink }, g); t.textContent = a.label; }
@@ -70,7 +76,7 @@
     for (const r of [].concat(reference || [])) {
       const yy = y(r.value);
       svg('line', { x1: padL, x2: w, y1: yy, y2: yy, stroke: ink, 'stroke-width': 1, 'stroke-dasharray': '4 4', opacity: 0.7 }, g);
-      if (r.label) { const t = svg('text', { x: w, y: yy - 5, 'text-anchor': 'end', 'font-size': 11, fill: ink }, g); t.textContent = r.label; }
+      if (r.label) { const left = r.at === 'left'; const t = svg('text', { x: left ? padL + 4 : w, y: yy - 5, 'text-anchor': left ? 'start' : 'end', 'font-size': 11, fill: ink }, g); t.textContent = r.label; }
     }
   }
   function line(el, { labels, series, format = fmt.int, height = 220, fill = false, min, max, step = false, annotations, reference, today = null, endLabel = false }) {
@@ -130,7 +136,7 @@
       const x = (i) => padL + band * i + band / 2;
       const y = (v) => padT + (h - padT - padB) * (1 - v / yt.at(-1));
       const g = svg('g', {}, s);
-      axes(g, { w, h, padL, padB, padT, yt, y, xLabels: labels, x, el });
+      axes(g, { w, h, padL, padB, padT, yt, y, xLabels: labels, x, el, band: true });
       const main = colour || css(el, '--chart-1', '#2f6fdf'), muted = css(el, '--chart-muted', '#c9c9c9');
       values.forEach((v, i) => { const r = svg('rect', { x: x(i) - bw / 2, y: y(v), width: bw, height: Math.max(0, y(0) - y(v)), fill: highlight == null || highlight === i ? main : muted, 'shape-rendering': 'crispEdges' }, g); const t = svg('title', {}, r); t.textContent = `${labels[i]}: ${format(v)}`; });
       notes(g, el, { annotations, reference, x, y, padT, h, padB, w, padL });

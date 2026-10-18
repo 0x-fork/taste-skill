@@ -23,6 +23,7 @@ const widths = flag('widths', '1440,768,390').split(',').map(Number).filter(Bool
 let allow = flag('allow', '').split(',').filter(Boolean);
 const asJson = has('json');
 let appMode = has('app');
+let dealtFonts = []; // the faces the saved sheet dealt, to catch a build that quietly fell back to a default
 const target = args[0];
 if (!target || target === '-h' || target.startsWith('--')) {
   console.error('usage: node inspect.mjs <url | file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--json]');
@@ -30,7 +31,7 @@ if (!target || target === '-h' || target.startsWith('--')) {
 }
 // Allowances granted by the drawn direction (written by draw.mjs) apply automatically.
 for (const p of ['.taste-skill/direction.json', join(outDir, '..', 'direction.json')]) {
-  if (existsSync(p)) { try { const d = JSON.parse(readFileSync(p, 'utf8')); allow = [...new Set([...allow, ...(d.allow || [])])]; if (d.kind === 'app') appMode = true; } catch {} break; }
+  if (existsSync(p)) { try { const d = JSON.parse(readFileSync(p, 'utf8')); allow = [...new Set([...allow, ...(d.allow || [])])]; if (d.kind === 'app') appMode = true; dealtFonts = d.kind === 'app' ? [d.style?.tokens?.font?.family].filter(Boolean) : (d.input?.keep || []).includes('type') ? [] : [d.type?.display?.family, d.type?.text?.family].filter(Boolean); } catch {} break; }
 }
 // A local file is served over http from a throwaway server on 127.0.0.1, so the browser never has to
 // open a file path (some sandboxes show Node and the browser different views of the disk) and relative
@@ -155,6 +156,12 @@ try {
       sheets.push(p);
     }
     let findings = judge(m, { width: w, allow });
+    if (dealtFonts.length && w >= 1100 && !allow.includes('font-not-dealt')) {
+      const norm = (f) => String(f).toLowerCase().replace(/["']/g, '').replace(/\s+variable$/, '').trim();
+      const used = m.type.families.filter((f) => f.share >= 0.1).map((f) => norm(f.family));
+      const missing = dealtFonts.filter((f) => !used.some((u) => u === norm(f) || u.startsWith(norm(f))));
+      if (missing.length === dealtFonts.length) findings.push({ level: appMode ? 'FAIL' : 'WARN', id: 'font-not-dealt', width: w, message: `The sheet dealt ${dealtFonts.join(' and ')}, but the page renders ${m.type.families.slice(0, 2).map((f) => f.family).join(', ')}.`, fix: 'Load the dealt face (the link on the sheet) and put it first in font-family. A build that falls back to a default face lands on the default look.' });
+    }
     // a third of the studied award pages were still unreadable 4.5s after load; the house sequence is over by 1.2s
     if (!appMode && early && early.found && !early.visible && !allow.includes('late-title')) findings.push({ level: 'FAIL', id: 'late-title', width: w, message: `The title is not readable 1.2s after the page loaded (${early.why}).`, fix: 'Put the headline in the HTML, painted on the first frame; the load sequence only adds arrival and is settled by 1.2s (references/motion.md, "Load sequence in 1.2 seconds"). No preloader, no gate, no waiting for the load event.' });
     if (lay) findings.push(...judgeLayout(lay, { width: w, allow }));
