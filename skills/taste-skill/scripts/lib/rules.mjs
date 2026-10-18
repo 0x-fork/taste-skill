@@ -194,7 +194,7 @@ export function judgeLayout(L, { width = L.viewport.w, allow = [] } = {}) {
 // App screens (dashboards, admin, settings, inboxes) keep conventions a marketing page does not: tables
 // and panels may have quiet borders, labels are small, cards repeat, there is no hero, no picture floor
 // and no motion floor. These page rules do not apply to them; references/app-screens.md has the reasons.
-export const APP_SKIP = new Set(['hero-words', 'eyebrow', 'numbering', 'hairline', 'outlined-box', 'dashed', 'icon-cards', 'card-rows', 'pill-nav', 'grey-body', 'measure', 'first-action', 'few-pictures', 'no-real-pictures', 'no-footage', 'focal-point', 'no-hero', 'body-size', 'small-text', 'statement-length', 'shadow', 'glass', 'still-page', 'empty-screens', 'long-pin', 'side-scroll', 'pinned-over-picture', 'off-centre', 'lopsided', 'ragged-edges', 'untitled-section', 'size-count', 'all-centred']);
+export const APP_SKIP = new Set(['hero-words', 'eyebrow', 'mono', 'name-only-title', 'empty-middle', 'numbering', 'hairline', 'outlined-box', 'dashed', 'icon-cards', 'card-rows', 'pill-nav', 'grey-body', 'measure', 'first-action', 'few-pictures', 'no-real-pictures', 'no-footage', 'focal-point', 'no-hero', 'body-size', 'small-text', 'statement-length', 'shadow', 'glass', 'still-page', 'empty-screens', 'long-pin', 'side-scroll', 'pinned-over-picture', 'off-centre', 'lopsided', 'ragged-edges', 'untitled-section', 'size-count', 'all-centred']);
 
 export function judgeApp(A, m, { width = A.viewport.w, allow = [] } = {}) {
   const out = [];

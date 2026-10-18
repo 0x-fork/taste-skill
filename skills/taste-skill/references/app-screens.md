@@ -127,13 +127,23 @@ Every screen answers one question first: "Did today's sales come in?", "Which de
 waiting for a reply?", "How much of this month's plan is left?". Write it in one line. It decides
 three things:
 
-- **what is biggest.** In the study the largest block is the one that carries the screen's question:
-  a full-width hourly sales chart on a seller's home, the spending-plan card on a finance home (the
-  only card there spanning two columns), the ticket ring on an event's page;
+- **what is biggest.** In the study the largest block is always the one that carries the screen's
+  question, whatever form it takes (a chart, a plan, a ring, a list);
 - **what comes first** in the reading order;
 - **what is left out.** The studied settings page shows three usage numbers and links to the
   analytics screen instead of drawing a chart; four screens draw no chart at all because a few
   numbers say it.
+
+Then name the screen's **one finding**: the fact in today's data that most needs attention ("9 no-shows
+while 8 people waited for a place", "the 23:28 deploy doubled the error rate", "eating out is £36 over").
+Put it where it is read first, as the line under the title or the subline of the headline figure,
+next to the action it drives. In testing, the finding that mattered sat in a 14px caption at the
+bottom of a card and the screen read as flat.
+
+**Do not rebuild a studied screen.** When the product is of the same kind as a screen in the study (a
+finance home, a deploy overview), its arrangement is the trap: judges recognised the copies at once.
+Take the structure from the product's own things instead: for a couple's budget, Mia, Joint and Tom
+as three columns running through accounts, plan and bills; for a running club, the pace groups.
 
 Then list the screen's blocks as the answers to its next questions, one line each, the way the page
 run lists claims. A block with no question is deleted. This is how you avoid the stock order of KPI
@@ -367,7 +377,9 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
   the screen's name is still the first thing read.
 - **A noun, not a greeting**: "Analytics", "Overview", the project's or the object's name. 3 of 23
   greet, and one adds an emoji, which goes. A greeting suits a personal or team home only.
-- **An optional second line**: one 14-16px grey sentence saying what the screen shows, or a 12px line
+- **An optional second line**: one 14-16px grey sentence about the data or the object (the finding,
+  the period, the scope), never about the interface ("the filters narrow every block…", "this page
+  shows…" read as instructions, not a product), or a 12px line
   naming the data's source.
 - **Right of the title**: actions only when they are real (10 screens); otherwise nothing. A freshness
   stamp ("Updated Jul 27, 4:09 PM", with a refresh button) on 6.
@@ -405,7 +417,14 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
 - **Nothing else.** No icon in a coloured circle (0 of 23), no sparkline (0 of 23), no tinted tile.
   An info icon beside the label is fine (5 screens). Units are a smaller grey suffix: "5 mins" at 24
   over 14, "2 m 24 s", "5 /10".
-- **A second job.** KPIs may be the chart's series tabs (the unselected one turns grey) or the list's
+- **The answer figure leads.** When one figure is the screen's answer (a balance, net worth, the
+  portfolio's value), it is 30-36px and at least 1.3 times its sibling figures (those at 18-24px). In
+  testing, a 24px portfolio value beside two 24px figures left the screen without a lead.
+- **One figure, one place.** A figure shown in the strip is not repeated in a legend beside it, and a
+  KPI strip whose every cell names a panel below (RSVPs, then an RSVPs panel) is dropped: lead each
+  panel with its own number instead.
+- **A second job.** KPIs may be the chart's series tabs (the selected one carries a 2px rule or the
+  active fill, the others a hover state; grey values with no marker read as disabled) or the list's
   type filter (the selected card takes a 1.5px border).
 
 ### Deltas
@@ -442,6 +461,20 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
 | Has it drifted from its target? | One row per part: the current share as a bar with a 1px tick at the target (`Charts.bullet`); never two stacked bars to compare | house rule |
 | Where? | A map with a list beside it; the list carries the magnitudes | 1 |
 | Per period, and the running total? | The two side by side at equal width, with the same dates | 1 |
+
+Three more, from testing:
+
+- **The pair of per-period bars and the running total is used once per screen**, and only when the
+  total crosses a line that matters (capacity, a target). Three such pairs in six charts read as one
+  pattern stamped out.
+- **A series that is flat except for one event** gets at most two-thirds of the width and about 140px of
+  height, or a range capped at about twice its reference line with the off-scale peak labelled
+  (`Charts.line({ max })`). A full-width plot that is 85% empty was the biggest block on a first
+  screen and was marked down.
+- **A forecast is not a fact**: after today the line is dashed and the end value is labelled
+  (`Charts.line({ today, endLabel })`), with the gap to the target bracketed when there is one.
+- **What the brief asks to see over time is drawn on the first screen.** KPI cells may switch the chart
+  only between metrics the brief did not name.
 
 When there are only a few numbers, draw no chart: four screens skip it, and the settings page links
 to the analytics screen with "View more".
@@ -492,7 +525,9 @@ to 5.2.
   items at most, as a 5-8px dot with a 12-14px grey label in the card's header, or as a small table
   (dot, name, value, change) that makes the legend carry data. Never list a series that has no data
   (flagged). The legend dot is the line's colour.
-- **Rings** are never labelled on the slices; the total sits in the centre or beside the ring. The
+- **Rings** only for three to five parts of a whole that are not already listed beside them (a ring
+  redrawing the spent, due and left figures of the tile next to it was marked redundant). Never
+  labelled on the slices; the total sits in the centre or beside the ring. The
   screens noted for their rings use thin strokes: 3-5px on a 90-154px ring, 8px on 182px. Two others
   use 28 and 37px.
 - **Progress bars** are 4-24px tall (median 8), fully rounded, with both ends labelled ("Skilled 200"
@@ -553,7 +588,11 @@ to 5.2.
   everywhere ("$16,531.54"); abbreviate only in a capacity line ("12.7k of 20.0k"). A sign on every
   change ("-$0.09", "+10,100 (+0.20%)"). No space after the currency sign (one screen's "$ 89.00"
   beside "$15.00" is flagged).
-- **The identity column gets the most width**, about a third to a half of the table.
+- **The identity column gets the most width**, about a third to a half of the table, and it is never
+  the one cut off at desktop width: shorten names editorially first (drop the issuer every row
+  shares, the share class, "Ltd") and use the same short name at every width.
+- **One right edge per row or card**: every right-aligned figure inside a card or row ends on the same
+  padding line (a days-in-stage figure 18px short of the value above it reads as a second edge).
 - **Two measures stack in one cell** rather than taking two columns: a count over its 12px grey
   percentage, a date over its time, a money value over the amount in units, both lines on one right
   edge.
@@ -599,7 +638,9 @@ list so the text starts on one edge (a 50px slot with the text 16px after it). M
 
 - **No pagination on an overview** (0 of 23). Cap the rows and link out: "View all" in the section
   header, a 30px outlined button under the list, a full-width 32px bar. State the total ("3 tracks").
-- Row actions: none on 9 screens; otherwise one kebab at the far right. When a row needs doing
+- Row actions: none on 9 screens; otherwise one kebab at the far right. Reserve a trailing action
+  column only when most rows carry the action; otherwise the action is an ink text action on the
+  row's second line and the figures stay flush to the card edge. When a row needs doing
   (a bill to pay, an order to pack, a failed deploy), its action is a visible ghost button or an ink
   text action in one fixed trailing column, at the same pitch for every row; never muted grey text,
   and never stacked under the amount so the rows change height.
@@ -845,7 +886,14 @@ td.num, th.num { text-align: right; }
   "Automate your savings with up to 3.50% APY").
 - **Missing or not applicable** is a grey dash: an em dash, a "-", a 6x2px mark. Never a dash at full
   value size: "--" at 24px reads as loading (flagged).
-- **An empty section keeps its frame and its header** and adds one sentence: a 1px dashed box, radius
+- **Counts follow the view.** Counts shown in scope (tabs, KPI tiles, "12 open") are computed from
+  the rows in the current view or filter and recomputed on every switch.
+- **Red is a signal, not a texture**: one red mark per object at most, on the overdue or failing fact;
+  thirteen red strings on one board read as noise, and a list of deals needing attention does not
+  repeat the same flags on the board beside it.
+- **An empty section keeps its frame and its header** and adds one sentence spanning the block (in a
+  row grid, `grid-column: 1 / -1`; a message squeezed into one 34px column broke word by word in
+  testing): a 1px dashed box, radius
   8, about 38px tall ("No channel usage in this range."), or a bordered box with an add link
   ("+ Liability account"). In a builder, an empty slot is a dashed 1px box on the canvas colour.
 - **An empty chart is drawn**: the zero line, missing bars for empty periods, no padded range, no

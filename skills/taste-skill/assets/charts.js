@@ -8,10 +8,11 @@
 //   Charts.bars(el, { labels, values, highlight: 6, format })        one bar may carry the accent
 //   Charts.ring(el, { value: 0.72, label: '72%', sub: 'of capacity' }) a progress ring with its total inside
 //   Charts.barList(el, [{ label: 'Berlin', value: 412 }, …], { format })  a ranked list where the row is the bar
-//   Charts.plan(el, [{ label: 'Groceries', planned: 600, spent: 412, committed: 60 }, …])  planned against spent
+//   Charts.plan(el, [{ label: 'Groceries', planned: 600, spent: 412, committed: 60 }, …], { scale: 'row' | 'plan' })  planned against spent
 //   Charts.bullet(el, [{ label: 'Bonds', value: 0.31, target: 0.25 }, …])   share against a target
 //   line/bars also take annotations: [{ at: index, label: 'Deploy a3f09c1' }] and reference: { value, label }
-//   line takes step: true for a balance that only changes on given days
+//   line takes step: true for a balance that only changes on given days; today: index (the forecast after it is dashed);
+//   endLabel: true (the last value at the line's end); max: caps a flat series with one spike (the peak is labelled)
 // Every chart gets role="img" and an aria-label that states what it shows.
 (() => {
   const NS = 'http://www.w3.org/2000/svg';
@@ -72,24 +73,40 @@
       if (r.label) { const t = svg('text', { x: w, y: yy - 5, 'text-anchor': 'end', 'font-size': 11, fill: ink }, g); t.textContent = r.label; }
     }
   }
-  function line(el, { labels, series, format = fmt.int, height = 220, fill = false, min, step = false, annotations, reference }) {
+  function line(el, { labels, series, format = fmt.int, height = 220, fill = false, min, max, step = false, annotations, reference, today = null, endLabel = false }) {
     el._fmt = format;
     const draw = () => {
       const { s, w, h } = frame(el, height);
       const all = series.flatMap((x) => x.values.filter((v) => v != null)).concat([].concat(reference || []).map((r) => r.value));
-      const yt = ticks(min ?? Math.min(0, ...all), Math.max(...all), 4);
-      const padL = 12 + Math.max(...yt.map((v) => String(format(v)).length)) * 7, padB = 26, padT = 8;
-      const x = (i) => padL + (i * (w - padL)) / Math.max(1, labels.length - 1);
+      // max caps the range (a flat series with one spike): values above it are clipped and their peak labelled
+      const top = max ?? Math.max(...all);
+      const yt = ticks(min ?? Math.min(0, ...all), top, 4);
+      const lastVal = series[0].values.filter((v) => v != null).at(-1);
+      const padL = 12 + Math.max(...yt.map((v) => String(format(v)).length)) * 7, padB = 26, padT = 8, padR = endLabel ? 8 + String(format(lastVal)).length * 7 : 0;
+      const x = (i) => padL + (i * (w - padL - padR)) / Math.max(1, labels.length - 1);
       const y = (v) => padT + (h - padT - padB) * (1 - (v - yt[0]) / (yt.at(-1) - yt[0]));
       const g = svg('g', {}, s);
       axes(g, { w, h, padL, padB, padT, yt, y, xLabels: labels, x, el });
       series.forEach((sr, k) => {
         const col = sr.colour || (k === 0 ? css(el, '--chart-1', '#2f6fdf') : css(el, `--chart-${k + 1}`, css(el, '--chart-muted', '#a3a3a3')));
-        const pts = sr.values.map((v, i) => (v == null ? null : [x(i), y(v)]));
+        const pts = sr.values.map((v, i) => (v == null ? null : [x(i), y(Math.min(v, yt.at(-1)))]));
         // step: a balance that only changes on given days holds its value until the next one
         const d = pts.reduce((acc, p, i) => (p ? acc + (acc && pts[i - 1] ? (step ? `L${p[0].toFixed(1)} ${pts[i - 1][1].toFixed(1)}L` : 'L') : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1) : acc), '');
         if (fill && k === 0) { const first = pts.find(Boolean), last = [...pts].reverse().find(Boolean); svg('path', { d: `${d}L${last[0]} ${y(yt[0])}L${first[0]} ${y(yt[0])}Z`, fill: col, opacity: 0.12 }, g); }
-        svg('path', { d, fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+        if (today == null) svg('path', { d, fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+        else {
+          // a forecast: the line after today is dashed, so a projection never reads as a fact
+          const cut = x(today), id = 'c' + k + Math.random().toString(36).slice(2, 8);
+          const defs = svg('defs', {}, g);
+          const a = svg('clipPath', { id: id + 'a' }, defs); svg('rect', { x: 0, y: 0, width: cut, height: h }, a);
+          const b = svg('clipPath', { id: id + 'b' }, defs); svg('rect', { x: cut, y: 0, width: w, height: h }, b);
+          svg('path', { d, fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-linejoin': 'round', 'clip-path': 'url(#' + id + 'a)' }, g);
+          svg('path', { d, fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-dasharray': '5 4', opacity: 0.8, 'clip-path': 'url(#' + id + 'b)' }, g);
+          if (k === 0) { svg('line', { x1: cut, x2: cut, y1: padT, y2: h - padB, stroke: css(el, '--axis-ink', '#6b6b6b'), 'stroke-width': 1, opacity: 0.4 }, g); const t = svg('text', { x: cut + 4, y: h - padB - 6, 'font-size': 11, fill: css(el, '--axis-ink', '#6b6b6b') }, g); t.textContent = 'Today'; }
+        }
+        // values clipped by max: label the peak where it leaves the plot
+        sr.values.forEach((v, i) => { if (v != null && v > yt.at(-1) && (i === 0 || sr.values[i - 1] == null || sr.values[i - 1] <= yt.at(-1))) { let j = i, peak = v; while (j < sr.values.length && sr.values[j] != null && sr.values[j] > yt.at(-1)) { peak = Math.max(peak, sr.values[j]); j++; } const t = svg('text', { x: x(i) + 4, y: padT + 10, 'font-size': 11, fill: col }, g); t.textContent = format(peak) + ' at ' + labels[i]; } });
+        if (endLabel && k === 0) { const li = sr.values.map((v, i) => (v == null ? -1 : i)).filter((i) => i >= 0).at(-1); const t = svg('text', { x: x(li) + 6, y: y(Math.min(sr.values[li], yt.at(-1))) + 4, 'font-size': 12, 'font-weight': 600, fill: css(el, '--ink', '#111') }, g); t.textContent = format(sr.values[li]); }
       });
       notes(g, el, { annotations, reference, x, y, padT, h, padB, w, padL });
       // hover: a rule, a dot per series and a bare tooltip
@@ -136,18 +153,21 @@
     el.innerHTML = '';
     const max = Math.max(...rows.map((r) => r.value)) || 1;
     const list = document.createElement('ol'); list.style.cssText = 'list-style:none;margin:0;padding:0;display:grid;gap:2px;font-variant-numeric:tabular-nums';
+    const valueCol = Math.max(...rows.map((r) => String(format(r.value)).length)) + 1;
     for (const r of rows) {
-      const li = document.createElement('li'); li.style.cssText = 'position:relative;display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:6px;isolation:isolate';
+      const li = document.createElement('li'); li.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) ' + valueCol + 'ch;align-items:center;gap:12px';
+      const track = document.createElement('span'); track.style.cssText = 'position:relative;padding:10px 12px;border-radius:6px;isolation:isolate;min-width:0';
       const bar = document.createElement('span'); bar.style.cssText = `position:absolute;inset:0 auto 0 0;width:${(r.value / max) * 100}%;background:${colour || 'var(--bar-fill, color-mix(in srgb, var(--chart-1, #2f6fdf) 12%, transparent))'};border-radius:inherit;z-index:-1`;
-      li.append(bar); const a = document.createElement('span'); a.textContent = r.label; const b = document.createElement('span'); b.textContent = format(r.value); b.style.fontWeight = '500';
-      li.append(a, b); list.appendChild(li);
+      track.append(bar); const a = document.createElement('span'); a.textContent = r.label; a.style.cssText = 'position:relative;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'; track.append(a);
+      const b = document.createElement('span'); b.textContent = format(r.value); b.style.cssText = 'font-weight:500;text-align:right';
+      li.append(track, b); list.appendChild(li);
     }
     el.appendChild(list);
   }
   // Planned against spent: the track is the plan, the fill what is spent, a lighter segment what is
   // already committed (bills to come), and an overrun past the track's end in the negative colour.
   // One row per category: label and figures on one line, the 8px track under them.
-  function plan(el, rows, { format = fmt.money('EUR', 0), note = (r) => r.spent > r.planned ? `${format(r.spent - r.planned)} over` : `${format(r.planned - r.spent - (r.committed || 0))} left` } = {}) {
+  function plan(el, rows, { format = fmt.money('EUR', 0), scale = 'row', note = (r) => r.spent > r.planned ? `${format(r.spent - r.planned)} over` : `${format(r.planned - r.spent - (r.committed || 0))} left` } = {}) {
     el.innerHTML = '';
     const list = document.createElement('ul'); list.style.cssText = 'list-style:none;margin:0;padding:0;display:grid;gap:14px;font-variant-numeric:tabular-nums';
     const max = Math.max(...rows.map((r) => Math.max(r.planned, r.spent + (r.committed || 0))));
@@ -156,12 +176,14 @@
       const li = document.createElement('li');
       const top = document.createElement('div'); top.style.cssText = 'display:flex;justify-content:space-between;gap:12px;margin-bottom:6px';
       top.innerHTML = `<span>${r.label}</span><span><b style="font-weight:500">${format(r.spent)}</b> <span style="color:var(--muted,#5f6368)">of ${format(r.planned)} · </span><span style="color:${over ? 'var(--negative,#c4242a)' : 'var(--muted,#5f6368)'}">${note(r)}</span></span>`;
-      const track = document.createElement('div'); track.style.cssText = `position:relative;height:8px;border-radius:999px;background:var(--rule,#eceeef);width:${(r.planned / max) * 100}%;overflow:visible`;
+      // scale 'row': each track is full width and shows the share used (rows in a grid compare); 'plan': as long as its plan
+      const room = over ? 100 / (1 + Math.max(0.06, (r.spent - r.planned) / r.planned)) : 100;
+      const track = document.createElement('div'); track.style.cssText = 'position:relative;height:8px;border-radius:999px;background:var(--rule,#eceeef);overflow:visible;width:' + (scale === 'plan' ? (r.planned / max) * room : room) + '%';
       const pct = (v) => (v / r.planned) * 100;
       const spent = Math.min(r.spent, r.planned);
       track.innerHTML = `<span style="position:absolute;inset:0 auto 0 0;width:${pct(spent)}%;border-radius:999px;background:var(--chart-1,#2f6fdf)"></span>`
         + (r.committed ? `<span style="position:absolute;top:0;bottom:0;left:${pct(spent)}%;width:${Math.min(pct(r.committed), 100 - pct(spent))}%;background:var(--chart-1,#2f6fdf);opacity:.35"></span>` : '')
-        + (over ? `<span style="position:absolute;top:0;bottom:0;left:100%;width:${pct(r.spent - r.planned)}%;border-radius:0 999px 999px 0;background:var(--negative,#c4242a)"></span>` : '');
+        + (over ? `<span style="position:absolute;top:-3px;bottom:-3px;left:100%;width:1px;background:var(--text,#111)"></span><span style="position:absolute;top:0;bottom:0;left:calc(100% + 2px);width:max(12px, ${pct(r.spent - r.planned)}%);border-radius:0 999px 999px 0;background:var(--negative,#c4242a)"></span>` : '');
       track.setAttribute('role', 'img'); track.setAttribute('aria-label', `${r.label}: ${format(r.spent)} of ${format(r.planned)}${r.committed ? `, ${format(r.committed)} committed` : ''}${over ? ', over plan' : ''}`);
       li.append(top, track); list.appendChild(li);
     }

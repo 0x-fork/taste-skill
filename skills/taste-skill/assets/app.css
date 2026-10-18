@@ -154,3 +154,6 @@ td .sub { display: block; font-size: var(--fs-small); color: var(--muted); }
   .title-row { flex-wrap: wrap; align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; } }
+
+/* an empty message spans the block it stands in, never one squeezed column */
+.rows .empty, .grid > .empty, li > .empty { grid-column: 1 / -1; width: 100%; }
