@@ -499,7 +499,8 @@ export function frame() {
     if (srOnly) continue;
     // the boxes that clip this text (overflow other than visible, or a clip-path)
     const clips = []; for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) { const pcs = getComputedStyle(p); if (pcs.overflowY !== 'visible' || pcs.overflowX !== 'visible' || pcs.clipPath !== 'none') clips.push(p.getBoundingClientRect()); }
-    const pinned = size >= 32 && pinnedLow(el);
+    // a scroll scene moves pictures across its own held stage by design; its text is judged by the scene rules
+    const pinned = size >= 32 && pinnedLow(el) && !el.closest('.scene.is-live');
     // lines of one heading set as separate spans overlap each other's glyph boxes; that is not a collision
     const unit = el.closest('h1, h2, h3, h4, h5, h6, p, blockquote');
     const range = document.createRange(); let total = 0, hidden = 0, cutTop = false, area = 0, over = 0;
@@ -548,7 +549,7 @@ export function frame() {
     }
   }
   // 3. the large text in view, to spot one statement held on screen for screen after screen
-  const big = [...new Set([...document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, blockquote')].filter((el) => { const r = el.getBoundingClientRect(); return parseFloat(getComputedStyle(el).fontSize) >= 32 && r.top >= -4 && r.bottom <= H + 4 && r.height > 0; }).map((el) => (el.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 60)).filter((t) => t.length >= 4))];
+  const big = [...new Set([...document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, blockquote')].filter((el) => { const r = el.getBoundingClientRect(); return !el.closest('.scene.is-live') && parseFloat(getComputedStyle(el).fontSize) >= 32 && r.top >= -4 && r.bottom <= H + 4 && r.height > 0; }).map((el) => (el.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 60)).filter((t) => t.length >= 4))];
   return { covered, clipped, pinnedOver, filled: Math.round((filled / samples) * 100) / 100, big, y: Math.round(scrollY) };
 }
 

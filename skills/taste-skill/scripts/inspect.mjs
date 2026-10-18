@@ -150,6 +150,19 @@ try {
     const appM = appMode ? await page.eval(app).catch(() => null) : null;
     if (appM) appM.colourShare = await helper.eval(colourShare, 'data:image/jpeg;base64,' + frames[0]).catch(() => null);
 
+    // scroll scenes (assets/scenes): each must have started, run live on desktop, and leave the page room
+    const sceneState = w >= 1100 && !appMode ? await page.eval(`[...document.querySelectorAll('section.scene, .scene[data-scene]')].map((s) => ({ id: s.dataset.scene || s.id || 'scene', live: s.classList.contains('is-live'), rest: s.classList.contains('is-rest'), h: Math.round(s.getBoundingClientRect().height) }))`).catch(() => []) : [];
+    const sceneFindings = [];
+    if (sceneState.length) {
+      const idle = sceneState.filter((s) => !s.live && !s.rest);
+      if (idle.length && !allow.includes('scene-not-started')) sceneFindings.push({ level: 'FAIL', id: 'scene-not-started', width: w, message: `${idle.length} scene(s) never started: ${idle.map((s) => s.id).join(', ')}.`, fix: 'Load assets/scenes/stage.js and the scene file for each data-scene, then call Stage.smooth(); Stage.init(); at the end of <body> (references/scenes.md, "Putting a scene on a page").' });
+      const atRest = sceneState.filter((s) => s.rest);
+      if (atRest.length && !allow.includes('scene-not-live')) sceneFindings.push({ level: 'FAIL', id: 'scene-not-live', width: w, message: `${atRest.length} scene(s) show their finished composition on desktop instead of running: ${atRest.map((s) => s.id).join(', ')}.`, fix: 'GSAP or ScrollTrigger did not load (check the pinned CDN lines and the console), or the scene threw while building. The scene must run where motion is allowed.' });
+      if (sceneState.length > 4 && !allow.includes('many-scenes')) sceneFindings.push({ level: 'WARN', id: 'many-scenes', width: w, message: `${sceneState.length} scroll scenes on one page.`, fix: 'Two or three scenes, with quiet sections between them, so each one lands. Cut the weakest.' });
+      const held = sceneState.reduce((a, s) => a + Math.max(0, s.h - h), 0);
+      if (held > (metrics.page.height || 1) * 0.6 && !allow.includes('scene-heavy')) sceneFindings.push({ level: 'WARN', id: 'scene-heavy', width: w, message: `Scenes hold ${Math.round(held / h)} of the page's ${Math.round((metrics.page.height || 0) / h)} screens.`, fix: 'Shorten the holds (one screen per beat) or cut a scene; the reading sections need room between them.' });
+    }
+
     // --film: the scroll as a visitor sees it. Real wheel input and a frame every third of a screen, so a
     // scroll scene shows its in-between states, not only where each screen lands.
     const filmSheets = [];
@@ -182,7 +195,7 @@ try {
       await sheet(frames.slice(i, i + perSheet), cols, cellW, cellH, p);
       sheets.push(p);
     }
-    let findings = judge(m, { width: w, allow });
+    let findings = [...judge(m, { width: w, allow }), ...sceneFindings];
     if (dealtFonts.length && w >= 1100 && !allow.includes('font-not-dealt')) {
       const norm = (f) => String(f).toLowerCase().replace(/["']/g, '').replace(/\s+variable$/, '').trim();
       const used = m.type.families.filter((f) => f.share >= 0.1).map((f) => norm(f.family));

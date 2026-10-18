@@ -19,7 +19,13 @@ Read this before adding any animation. The static page must already be finished 
 ## 1. The budget
 
 A page that does not move reads as a mock-up; the inspector counts what moves while the page loads and
-scrolls, and fails it under eight elements. The motion layer has four parts:
+scrolls, and fails it under eight elements. The motion layer has five parts:
+
+- **Two or three scroll scenes:** the big, scroll-driven moments award sites are remembered for (a
+  camera flying through a field of pictures, a picture that grows from a window to the whole screen,
+  type that crosses a held stage, cards that deal out and stack). The direction sheet deals them from
+  `library/scenes.json`; `references/scenes.md` says how to fill and fit them. They are where the page
+  is bold; everything else stays quiet so they land.
 
 - **One signature moment:** the thing a visitor would describe an hour later: the headline that rises
   out of a mask, the image that opens like a shutter, the wordmark that scales with the scroll. The
@@ -47,8 +53,10 @@ the transitions, tweens and scroll triggers recorded while each page loaded and 
 the gallery does something the house rules ban, the house version follows.
 
 - **The stack.** Two in three use a smooth-scroll library and three in five ship Three.js; GSAP is
-  named on 56. None of that is needed for what follows. Only 3 use CSS scroll-driven animations and
-  6 use view transitions, which now do most of what the libraries are loaded for.
+  named on 56. The quiet layer below (reveals, line rises, the ink fill) needs none of it: CSS scroll
+  timelines and view transitions do that work, though only 3 and 6 of the sites use them. The big
+  scroll scenes are built on GSAP ScrollTrigger, as on the award sites, through the shared stage in
+  `assets/scenes/` (`references/scenes.md`).
 - **Curves.** The curves that really ran are strong ease-outs: expo out (`.16,1,.3,1` and
   `.19,1,.22,1`) ran on 14 sites, cubic out on 13, quint out on 7, and by number of transitions the
   quint and expo outs lead every chosen curve. In-out curves are kept for wipes and things that
@@ -136,11 +144,11 @@ How the study bears on each:
 
 | Behaviour | Pages of 99 | What it serves | House version |
 | --- | --- | --- | --- |
-| Smooth-scroll library | 67 | A feeling of weight; makes scrubbed scenes easier to build | Not used. Native scroll; scroll timelines do the linking |
-| Held (sticky or pinned) stage | 44 | One picture or object carries several claims; chapters | Yes: sticky only, at most two per page, about one screen per step, three per stage, every held screen carries a line of text |
+| Smooth-scroll library | 67 | A feeling of weight; makes scrubbed scenes easier to build | Optional, through `Stage.smooth()`: Lenis at lerp 0.1-0.14, off for touch and reduced motion |
+| Held (sticky or pinned) stage | 44 | One picture or object carries several claims; chapters | Yes: the scroll scenes (`references/scenes.md`), two or three per page, one to four screens each; other sticky stages three screens at most |
 | Split text | 40 | Lines and words arriving as they are read; hover rolls | Lines for headings and statements; words only for the ink fill; characters only for a heading of one to three words |
 | Colour by chapter | 34 | Tells chapters apart without padding bands | Yes, as hard cuts at section edges; the header ink follows in 300ms |
-| Scroll-scrubbed scene (camera, object, image sequence) | 26 | Explains a product by moving it | Only with real frames (photographs, a short image sequence), capped at two screens, with a static fallback |
+| Scroll-scrubbed scene (camera, object, image sequence) | 26 | Explains a product by moving it | Yes, from the scene library, built on the shared stage with a finished composition for reduced motion |
 | Parallax depth | 24 | Depth in collages; pictures drifting inside oversized frames | Travel under 8% of the element, pictures held at 106-110% in their frames |
 | Marquee | 21 | Life on a static band | Existing "Edge-to-edge marquee": one per page, pausable |
 | Masked line or word rise | 18 | Headings that arrive like set type | Yes: "Masked line reveal" on load, "Lines that rise on scroll" below the fold |
@@ -875,8 +883,9 @@ both built.
   element that moves.
 - `will-change` only on an element that is about to animate, removed afterwards.
 - Pause loops when off screen or when the tab is hidden.
-- No scroll hijacking, no smooth-scroll library by default, no custom cursor. They cost usability,
-  which is 30% of an Awwwards score and the line most winners score lowest on.
+- No scroll hijacking and no custom cursor. They cost usability, which is 30% of an Awwwards score and
+  the line most winners score lowest on. Smoothing only through `Stage.smooth()`, which stays off for
+  touch and reduced motion.
 
 ## 9. What gives generated motion away
 
@@ -935,7 +944,9 @@ hard cuts; monospace HUD labels become small text in the text face.
 1. **First frame.** The headline, the sentence and the picture are in the HTML and painted on the first
    frame. The load sequence starts without waiting for the load event and is settled by 1.2 s, with
    four elements at most.
-2. **No preloader, no counter, no gate, no smooth-scroll library, no custom cursor, no wheel capture.**
+2. **No preloader, no counter, no gate, no custom cursor, no wheel capture.** Smoothing only through
+   `Stage.smooth()` (Lenis at lerp 0.1-0.14, off for touch and reduced motion): weight, never a page
+   that keeps sliding after the hand stops.
 3. **Curves.** `--ease-out` for anything under 600ms; `--ease-expo` for reveals of 800ms or more;
    `--ease-in-out` for wipes and things that travel; `--ease-exit` only for things leaving for good;
    `linear` for scroll-linked motion and loops; plain `ease` for colour. No overshoot.
@@ -946,11 +957,18 @@ hard cuts; monospace HUD labels become small text in the text face.
 6. **Reveals.** Fire once, when the element's top is 85-90% of the way down the viewport; rise 12-32px
    or from a line mask; nothing in view stays hidden for more than 900ms; nothing above the fold waits
    for scroll.
-7. **Held stages.** Sticky, at most two per page, about one screen per step, three screens per stage,
-   a count when there are more than two steps, a line of text on every held screen.
-8. **Scroll-linked travel.** Linear and locked to the scrollbar; parallax under 8% of the element;
-   scale between 0.94 and 1.15; built with scroll timelines inside `@supports`, static without them.
-9. **One of each.** One signature move; one scrubbed statement; one moving picture; one marquee at most.
+7. **Scroll scenes are where the page is bold.** The big moves come from the scene library
+   (`references/scenes.md`): the direction sheet deals two or three per page, each built on
+   `assets/scenes/stage.js`, each held for one to four screens, each with a phone version and a
+   finished composition. Inside a scene the scene's own numbers apply (a picture may grow from a
+   window to the whole screen, type may cross the stage, a camera may fly through a field of
+   pictures); rules 8 and 10 still hold for the text a visitor is reading.
+8. **Outside the scenes, scroll-linked travel stays quiet.** Linear and locked to the scrollbar;
+   parallax under 8% of the element; scale between 0.94 and 1.15; built with scroll timelines inside
+   `@supports`, static without them. Other held stages: sticky, about one screen per step, three
+   screens at most, a line of text on every held screen.
+9. **One of each.** One signature move (a dealt scene can be it); one moving picture; one marquee at
+   most. A quiet section between two scenes, so each one lands.
 10. **Text stays readable.** Fills start at 45% ink; dims no lower than 40%; blur at most 8px and gone
     once settled; nothing moves across text being read.
 11. **Colour by chapter** as hard cuts at section edges; the fixed header's ink follows in 300ms.
