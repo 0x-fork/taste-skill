@@ -1,7 +1,7 @@
 {
   "name": "taste-skill",
   "description": "tasteskill v2: art direction for coding agents, with a library of researched directions, real pictures from open collections and a real-browser inspector. Also image-generation, redesign and style skills.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": {
     "name": "leonxlnx",
     "email": "hello@tasteskill.dev"
