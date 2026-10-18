@@ -4,6 +4,16 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ---
 
+## 2.1.1 - 2026-10-19
+
+One skill to reach for. Installing the repo no longer means an agent might pick an older skill for the job.
+
+- **The classic skills are opt-in.** soft, minimalist, brutalist, gpt-taste, Stitch, v1 and v2-experimental run only when called by name: `disable-model-invocation: true` for Claude Code, `allow_implicit_invocation: false` (`agents/openai.yaml`) for Codex, and descriptions that say so for every other agent.
+- **Redesigns are part of taste-skill.** `SKILL.md` has a full route for a redesign, restyle or review of an existing page or app screen: record the before in a real browser, keep the stack, the content and what works, change type, colour, the frame, states and stock components in that order, prove it with before and after. `redesign-existing-projects` is retired and points there.
+- **The image-generation skills moved** to their own repo, [Leonxlnx/imagegen-skills](https://github.com/Leonxlnx/imagegen-skills): `imagegen-frontend-web`, `imagegen-frontend-mobile`, `brandkit`, `image-to-code`. Same install names; the folders here point there.
+- **`full-output-enforcement` is removed.**
+- **Two Claude Code plugins:** `taste-skill` carries only the default skill; `taste-skill-classics` carries the classic skills for whoever wants them.
+
 ## 2.1.0 - 2026-10-19
 
 ### The scroll-scene engine
