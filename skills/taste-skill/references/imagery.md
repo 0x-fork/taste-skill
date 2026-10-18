@@ -591,8 +591,9 @@ Each entry gives when to use it, the geometry at 1440×900, the phone version an
 - *When.* A list of eight or more projects or clients where the names matter as much as the pictures.
 - *Geometry.* Rows on a 45–80px pitch, names at 30–60px. One picture at a time, about a third of the
   width at 16:9 or a portrait 300–450px tall, at a fixed place (the right half from the 50% line, or
-  the centre), swapped within 0.3s. A version that needs no mouse: the names scroll past a picture
-  fixed at the centre, and the picture shows whichever name is crossing it.
+  the centre), swapped within 0.3s. A version that needs no mouse: the names scroll across a picture
+  fixed at the centre and the picture shows whichever name is crossing it. In the study the picture
+  sits on top of the names; here nothing lies on top of large type, so the names pass in front of it.
 - *Phone.* No hover. Give each row a thumbnail about 100px wide, or use the scroll version.
 - *Fails.* Pictures that never appear on a touch screen. Rows divided by hairlines, the award-site
   habit: here rows are separated by space, and the active row by ink or a change of ground.
@@ -620,14 +621,17 @@ Each entry gives when to use it, the geometry at 1440×900, the phone version an
 - *Fails.* More than four; chips from different shoots; a chip that carries information the words do
   not.
 
-**Picture inside or in front of display type**
+**Picture inside or behind display type**
 
 - *When.* The object is the subject: a product, a building, a person.
-- *Geometry.* The object stands in front of 150–200px display type and covers one or two letters; or a
-  small picture window sits inside a block of type and later opens into the next screen; or a line of
-  type runs behind a square picture. The word must still read.
+- *Geometry.* A small picture window sits inside a block of 150–200px display type and later opens
+  into the next screen; or the object stands behind the type, showing between and around the letters;
+  or it touches the edge of the word without covering a letter. In the study the object more often
+  stands in front and covers one or two letters, or a line of type runs behind a square picture; here
+  nothing lies on top of a headline (the inspector fails large text a fifth or more hidden), so the
+  type stays in front.
 - *Phone.* Keep it, with the type at about 15vw, and check the word still reads.
-- *Fails.* Covering so much that the word is lost; type displaced or glitched by the picture.
+- *Fails.* An object over the letters; type displaced or glitched by the picture.
 
 **Cut-out object on a flat field**
 
@@ -679,7 +683,7 @@ Each entry gives when to use it, the geometry at 1440×900, the phone version an
 - Sources: 1920×1080 is the commonest, then 1280×720; tall clips at 450×800 or 540×960 for phones and
   portrait tiles. Median source width 1,080px.
 - On the page: 16:9 41%, square 19%, portrait (4:5 to 9:16) 25%, 4:3 or 3:2 12%. Corners square on 75%
-  (the rest 4–5px or 20–32px). `object-fit: cover` on 84%, contain on 16% (product strips, letterboxed
+  (the rest 8px or less, or 20–32px). `object-fit: cover` on 84%, contain on 16% (product strips, letterboxed
   films).
 
 **Where it goes.**

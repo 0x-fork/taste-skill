@@ -7456,7 +7456,8 @@
    "Spend one flat accent on about 2-3% of the surface and only on what demands attention (the problem flags, one disc, the primary action) on a warm paper ground with near-black ink. The site separates everything with 1px rules, monospace labels and bracketed indices, all banned here: keep the cells, mark them with tone steps and space, and set labels in the text face."
   ],
   "media": "Every picture is a drawing, never a photograph or a video: one contained etched elevation centred on paper (box about 95% wide and 72% high), a drawing held in one half against a statement, a sticky full-frame plan that builds beside a docked caption card, and 464px looping vignettes in a zigzag. Twenty-seven images, nine inline SVG drawings and paper-grain backgrounds.",
-  "motion": "A 4.5s loader draws the house stroke by stroke, then a stepped pixel dissolve (mask position over 0.58s in 19 steps) swaps line art for etching. Lenis and 52 ScrollTriggers run the rest: lines rise with opacity and yPercent over 0.8-1.08s power2.out at a 0.02 stagger, the big statement fills grey to ink on a scrub, the plan builds in layers inside an 8074px CSS-sticky wrap, vignettes loop on a 5s linear cycle with their own eases, and hovers move over 0.48s cubic-bezier(0.625,0.05,0,1)."
+  "motion": "A 4.5s loader draws the house stroke by stroke, then a stepped pixel dissolve (mask position over 0.58s in 19 steps) swaps line art for etching. Lenis and 52 ScrollTriggers run the rest: lines rise with opacity and yPercent over 0.8-1.08s power2.out at a 0.02 stagger, the big statement fills grey to ink on a scrub, the plan builds in layers inside an 8074px CSS-sticky wrap, vignettes loop on a 5s linear cycle with their own eases, and hovers move over 0.48s cubic-bezier(0.625,0.05,0,1).",
+  "panel": "2026-10"
  },
  {
   "id": "aww-huy-phan-vol-2",
@@ -7496,10 +7497,11 @@
   "steal": [
    "Change the content, not the layout: one fixed stage where only the active picture, its name and its credits swap per step. The site lets a 180px index number carry the hierarchy; the house rules ban index numbering, so set the project name that large instead.",
    "Let 3D cards bend with scroll speed and lie flat at rest, so the active picture is always a clean, undistorted rectangle of about a quarter of the width.",
-   "Anchor a sparse three-zone screen to one grid (labels in one column, values in the next, the picture centred, the list on the right) so a fixed stage reads as composed, and swap text in under half a second (opacity about 0.3s ease) so wheeling never waits for words."
+   "Anchor a sparse three-zone screen to one grid (labels in one column, values in the next, the picture centred, the list on the right) so a fixed stage reads as composed, and swap text in under half a second (opacity about 0.3s ease) so the visitor never waits for words."
   ],
   "media": "One fixed WebGL canvas covers the screen, but pictures fill about 30% of it: the active card is about 9% of the area, and the rest is the helix of neighbours cut by the top edge and the bottom-left corner. No video on the stage; a showreel sits behind a link.",
-  "motion": "A 5s intro, in which a mascot pushes a curtain aside and the cards cascade in bent like pages, follows a 9.2s load. Each wheel notch then jumps six projects round an endless loop of nineteen, the cards bending with velocity and the counter and credits crossfading through a blur (opacity 0.32s ease on 270 elements, background-color 0.52s cubic-bezier(0.22,0.61,0.36,1)), with no split text and no reduced-motion rule."
+  "motion": "A 5s intro, in which a mascot pushes a curtain aside and the cards cascade in bent like pages, follows a 9.2s load. Each wheel notch then jumps six projects round an endless loop of nineteen, the cards bending with velocity and the counter and credits crossfading through a blur (opacity 0.32s ease on 270 elements, background-color 0.52s cubic-bezier(0.22,0.61,0.36,1)), with no split text and no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-ciao-energy-launch-website",
@@ -7546,7 +7548,8 @@
    "Bind the accent to the product variant with one custom property that changes over 0.6s when the flavour changes, and let the scene's light follow it. The site floats the can over its slogan; under the house rules nothing covers a statement, so set the object beside or below the type."
   ],
   "media": "One fixed WebGL canvas covers 100% of every screen and holds the only pictures: product renders, no photographs and no video. The product stands centre in the hero, then fills a tilted band beside the copy column, then sweeps the whole range diagonally across the frame.",
-  "motion": "Fourteen ScrollTriggers on empty 1125px spacers set about 26 scene values (camera, can spin, arc spacing, light, tint) that short 0.09-0.12s power1.inOut tweens chase, so the camera moves continuously between beats. Headings, split into 382 characters, enter with opacity, scale and y over 0.6s power2.out and leave over 0.9s power2.in with a 0.25s stagger; the flavour colour eases over 0.6s, and the full scene took 12.7s to load."
+  "motion": "Fourteen ScrollTriggers on empty 1125px spacers set about 26 scene values (camera, can spin, arc spacing, light, tint) that short 0.09-0.12s power1.inOut tweens chase, so the camera moves continuously between beats. Headings, split into 382 characters, enter with opacity, scale and y over 0.6s power2.out and leave over 0.9s power2.in with a 0.25s stagger; the flavour colour eases over 0.6s, and the full scene took 12.7s to load.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-neutomni",
@@ -7593,7 +7596,8 @@
    "Turn pricing into objects you could tear off and keep: ticket cards with a perforated edge and a drawn barcode, tilted 5-15 degrees in perspective. Under the house rules they carry no resting shadow and the price is set in the text face, not monospace."
   ],
   "media": "Media covers about 35% of the first screen: the full-width wordmark across the top and a video card peeking from the fold, which grows into a sticky full-screen dark reel. Later pictures are a small photograph on the centre line, staged device photographs filling 60-65% of the width in a sticky split, and a canvas stage of rising red columns; one 38s looping video with no poster.",
-  "motion": "A 3.5s red preloader in which scissors travel along a dotted cut line, the wordmark already in its final place. Under Lenis, lines blur and rise in at 'top 85%' over 0.52-0.64s power1.out with a 0.12s stagger, the process shape morphs over 1s power2.inOut, the work pin scrubs at 0.8 with 0.9s power2.inOut clip-path wipes and inactive rows at 0.28 opacity, and the pricing runway runs about 7000px with no reduced-motion rule."
+  "motion": "A 3.5s red preloader in which scissors travel along a dotted cut line, the wordmark already in its final place. Under Lenis, lines blur and rise in at 'top 85%' over 0.52-0.64s power1.out with a 0.12s stagger, the process shape morphs over 1s power2.inOut, the work pin scrubs at 0.8 with 0.9s power2.inOut clip-path wipes and inactive rows at 0.28 opacity, and the pricing runway runs about 7000px with no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-belgrade-arbor",
@@ -7640,7 +7644,8 @@
    "Give every section exactly one viewport and change the ground colour or the full-bleed picture at each, so the scroll reads as chapters without padding bands; open a chapter with a full-bleed close-up of a material and one uppercase word at about 13vw docked bottom-left, coloured from a tone in that material."
   ],
   "media": "Pictures carry most screens: the pinned chapter pairs two shard-masked photographs opposite the text, chapter openers are full-bleed material close-ups and looping footage, and later chapters split 50/50 between a serif list and a map, a portrait slider or a portrait clip. Six muted videos, none autoplaying; the 16s hero clip has no poster and never painted on desktop.",
-  "motion": "Lenis drives a 9-viewport sticky stage where the ground turns from vanilla to moss, serif paragraphs blur and rise in word by word (939 split characters) and photographs crossfade inside the shards; caps titles sharpen character by character, and one giant word widens its letter spacing with the scroll. The only observed CSS transition is opacity 0.3s cubic-bezier(0.4,0,0.2,1); the rest is script-driven (.65s the commonest stylesheet duration), and the page took 12.2s to load."
+  "motion": "Lenis drives a 9-viewport sticky stage where the ground turns from vanilla to moss, serif paragraphs blur and rise in word by word (939 split characters) and photographs crossfade inside the shards; caps titles sharpen character by character, and one giant word widens its letter spacing with the scroll. The only observed CSS transition is opacity 0.3s cubic-bezier(0.4,0,0.2,1); the rest is script-driven (.65s the commonest stylesheet duration), and the page took 12.2s to load.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-nick-ho",
@@ -7687,7 +7692,8 @@
    "Use one signal colour for state only, about 8% of grounds and 3% of text, on a black-and-white page that alternates every one or two screens with hard cuts, and let exactly one glyph that belongs to the subject (here the car number) jump to 15vw against a single 50px heading size, with the name as the h1 beside it."
   ],
   "media": "A greyscale depth-map photograph covers 100% of the first screen. Later pictures are a sticky cut-out helmet among streaming logos, a vertical portrait strip, a carousel bleeding off the right edge, a cut-out car that travels down the calendar, an inset clip that grows to full bleed, and a dial of square photographs: 28 images, one 22s muted clip, one WebGL canvas.",
-  "motion": "There is no entrance (the page took 12.3s to load), and Lenis runs 97 ScrollTriggers with no pins: CSS sticky holds the helmet, the chapters and the calendar, 19 yPercent scrubs move the logo columns and stretched background words, and the video frame grows from an inset with about 54px margins to full bleed by scrubbing width, height and corner radius. Photographs regain colour over 0.4s, menu items slide over 0.5s cubic-bezier(.7,0,.3,1), button labels roll per character at a 0.018s stagger, and content blanks out mid-scroll under the smooth-scroll lag."
+  "motion": "There is no entrance (the page took 12.3s to load), and Lenis runs 97 ScrollTriggers with no pins: CSS sticky holds the helmet, the chapters and the calendar, 19 yPercent scrubs move the logo columns and stretched background words, and the video frame grows from an inset with about 54px margins to full bleed by scrubbing width, height and corner radius. Photographs regain colour over 0.4s, menu items slide over 0.5s cubic-bezier(.7,0,.3,1), button labels roll per character at a 0.018s stagger, and content blanks out mid-scroll under the smooth-scroll lag.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-odyssee",
@@ -7734,7 +7740,8 @@
    "End on real local detail (an hours table that marks today, a live local clock), then reveal a fixed full-bleed brand object as the last screen. The site's tiny white caps nav over pale skin all but disappears; the house version is a plain bar with the booking action as a real button."
   ],
   "media": "Video is the main medium: a 27s portrait loop and a second close-up fill the first screen, then four 5s tiles flush edge to edge, a 720/720 diptych, a tall half-width clip held while scrolling, a full-bleed band that fades up from cream, two navy duotone cards, and a fixed pearl loop revealed under the footer. Nine images and eight muted, looping videos with posters, started by script; no canvas.",
-  "motion": "No preloader: a warm grey veil lifts off the hero video over about 2.5-3s with the type already in place. Under Lenis the features section pins for four steps, cross-fading tiles over 0.3s cubic-bezier(0.16,1,0.3,1) as the navy rule grows, images fade over 0.5s cubic-bezier(0,0,0.2,1), underlines grow by background-size over .4s expo-out and the page lifts off a fixed bottom layer to reveal the pearl, but content is opacity-gated, so mid-scroll frames show empty cream, and there is no reduced-motion rule."
+  "motion": "No preloader: a warm grey veil lifts off the hero video over about 2.5-3s with the type already in place. Under Lenis the features section pins for four steps, cross-fading tiles over 0.3s cubic-bezier(0.16,1,0.3,1) as the navy rule grows, images fade over 0.5s cubic-bezier(0,0,0.2,1), underlines grow by background-size over .4s expo-out and the page lifts off a fixed bottom layer to reveal the pearl, but content is opacity-gated, so mid-scroll frames show empty cream, and there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-usavionix",
@@ -7781,7 +7788,8 @@
    "After a cold, dark story, pay off with warm photographs in normal flow: an expanding row of three, one open at about 660px and two closed at about 318px. The site speaks in monospace telemetry over hairline grids; the house version sets the readout in the text face with tabular figures and lets the scene carry the structure."
   ],
   "media": "One sticky full-bleed WebGL scene covers 100% of every story screen, with an SVG overlay drawing the boxes, tags, trails and ripple rings over it; after the story come three photographic mission cards and a wireframe globe bleeding off the right and bottom edges. Two canvases, four images, no video.",
-  "motion": "A preloader of 4.5s or more shows only the dimmed model, then Lenis drives one pinned canvas through about 60,000px: the drone turns from banked to top-down, the camera pulls back to the formation, rises into the mesh, dives to a sensor view and cuts to the map, where zone colours change by chapter. Text moves by opacity only through 346 WAAPI fades (250ms ease-out, 400ms ease-in-out after 200ms), HUD marks transform over 0.25s cubic-bezier(0.4,0,0.2,1), 64 ripple rings loop on 6s, and there is no reduced-motion rule."
+  "motion": "A preloader of 4.5s or more shows only the dimmed model, then Lenis drives one pinned canvas through about 60,000px: the drone turns from banked to top-down, the camera pulls back to the formation, rises into the mesh, dives to a sensor view and cuts to the map, where zone colours change by chapter. Text moves by opacity only through 346 WAAPI fades (250ms ease-out, 400ms ease-in-out after 200ms), HUD marks transform over 0.25s cubic-bezier(0.4,0,0.2,1), 64 ripple rings loop on 6s, and there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-maria-vasilyeva-portfolio",
@@ -7824,7 +7832,8 @@
    "Use a hand-written layer at about 2.5vw, drawn on with stroke-dashoffset, for at most two instructions (where to scroll, where to click), give it an off switch, and count it as one of the page's two faces."
   ],
   "media": "One fixed WebGL canvas draws every image: a full-width 32px thumbnail strip plus one project's collage around the playhead, about 25-35% of the pixels in all, the rest off-white. No img or video elements; about 60-80 project images in the strip, 10-20 blooming per project.",
-  "motion": "The loader runs past 4.5s: a counter alone for the first second, then serif lines slide in over 3.5s on cubic-bezier(0.16,1,0.36,1) and a 1.2s curtain on (0.7,0.15,0.25,1) clears it. Each wheel step slides the playhead and pulls the next project out of the strip into a collage while the last collapses back, round an endless loop of seven; nearly everything else runs on cubic-bezier(.16,1,.3,1), 1.4s for letter-spacing and transforms and 0.4s for fades, with no reduced-motion rule."
+  "motion": "The loader runs past 4.5s: a counter alone for the first second, then serif lines slide in over 3.5s on cubic-bezier(0.16,1,0.36,1) and a 1.2s curtain on (0.7,0.15,0.25,1) clears it. Each wheel step slides the playhead and pulls the next project out of the strip into a collage while the last collapses back, round an endless loop of seven; nearly everything else runs on cubic-bezier(.16,1,.3,1), 1.4s for letter-spacing and transforms and 0.4s for fades, with no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-michael-gatt",
@@ -7859,11 +7868,12 @@
   ],
   "steal": [
    "Over a full-screen picture stage, put every word on one centre axis and keep a clear channel about 15% of the viewport wide free of pictures; push the pictures to the sides and corners at mixed depths and let one or two crop off the corners so the scene reads as bigger than the screen.",
-   "Keep a wheel-driven camera flight short, about two steps from the welcome state to a settled end state, and make that end state the menu.",
+   "Keep a camera flight short, about two steps from the welcome state to a settled end state, and make that end state the menu. The site drives it from the wheel with no page scroll; here the page scrolls natively and the flight is tied to a sticky stage that ends.",
    "Dim every picture in a dark scene to about 50-60% brightness and fade the far ones into the ground, so white type stays readable with no scrim. The site sets every word at 8-18px in tracked caps; under the house rules the title is large and nothing is under 16px."
   ],
   "media": "One fixed WebGL canvas covers 100% of the screen and holds every picture as a textured plane: about 35 lining a tunnel to a central vanishing point, then about 12 floating round a clear text channel. No img or video elements in the DOM.",
-  "motion": "After the sound gate the scene fades up from about 10% brightness over 1-2s while the lockup arrives letter by letter; wheel steps then dolly the camera down the tunnel and pull the planes out into the cloud, ending after about two steps. Links fade from grey to white over 0.5s cubic-bezier(0.4,0,0.2,1) and widen their tracking over 0.4s; no GSAP or Lenis, and no reduced-motion rule."
+  "motion": "After the sound gate the scene fades up from about 10% brightness over 1-2s while the lockup arrives letter by letter; wheel steps then dolly the camera down the tunnel and pull the planes out into the cloud, ending after about two steps. Links fade from grey to white over 0.5s cubic-bezier(0.4,0,0.2,1) and widen their tracking over 0.4s; no GSAP or Lenis, and no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-miu-miu-a-house-that-we-shaped",
@@ -7906,7 +7916,8 @@
    "When the page is a scene, limit the interface to a few docked pieces covering under 3% of the frame: one subtitle line, one task card, one hotspot on the object to touch, one sound toggle. Under the house rules the first screen still names the product and offers a plain route to the collection."
   ],
   "media": "The gate is pure type on navy; after entry one fixed WebGL canvas renders the whole room at 100% of the viewport from the first frame, with no img or video elements in the captured state and the interface on under 3% of the frame. The intro is a camera move inside the scene, not a video.",
-  "motion": "Twelve wheel steps leave the room unchanged apart from a sway of up to about 18px, while the camera pull-back plays on its own clock and then the hotspot ring pulses from scale 1 to 2.2 over 2s cubic-bezier(.215,.61,.355,1) as the task card fades in over 0.55-0.65s. Most moves use easeOutQuint (.23,1,.32,1, 37 uses) or expo-out (.16,1,.3,1) for 1.6s mask wipes, and the pulse, wiggle and jitter loops run with no reduced-motion rule after a 4.2s load."
+  "motion": "Twelve wheel steps leave the room unchanged apart from a sway of up to about 18px, while the camera pull-back plays on its own clock and then the hotspot ring pulses from scale 1 to 2.2 over 2s cubic-bezier(.215,.61,.355,1) as the task card fades in over 0.55-0.65s. Most moves use easeOutQuint (.23,1,.32,1, 37 uses) or expo-out (.16,1,.3,1) for 1.6s mask wipes, and the pulse, wiggle and jitter loops run with no reduced-motion rule after a 4.2s load.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-twks-1",
@@ -7924,7 +7935,7 @@
    "confident"
   ],
   "archetype": "product-object-centre",
-  "hero": "Black 1440x900 with nothing but one photographed gold oval seal, about 250x180 (17% of the width), dead centre and turning slowly on a turntable loop, and one 20px lowercase white line at y=450 on a 6-column grid: the brand at x=10, four section links from x≈247, a short 'swiss creative agency' descriptor from x≈953 and the contact link flush right. The line runs into the object and continues on the other side. No headline and no button; about 3-4% of the screen is lit and the black is the composition.",
+  "hero": "Black 1440x900 with nothing but one photographed gold oval seal, about 250x180 (17% of the width), dead centre and turning slowly on a turntable loop, and one 20px lowercase white line at y=450 on a 6-column grid: the brand at x=10, four section links from x≈247, a three-word descriptor of the kind of agency from x≈953 and the contact link flush right. The line runs into the object and continues on the other side. No headline and no button; about 3-4% of the screen is lit and the black is the composition.",
   "type": "One family, GT Standard, a Swiss neo-grotesk at 400/500/600, in effectively two sizes: 52.8px (3.7vw) at 600, leading 1.0, -0.01em, for the statement only, and 20px (1.4vw) at 400, leading 1.2, +0.01em, for everything else. Hierarchy comes from a grey rather than more sizes; the ratio is about 2.6.",
   "colour": "#ffffff #000000 #8c8c8c — White ground (84%) and black for the fold and footer; text in black, with one grey for descriptors, links and inactive options (about 3.4:1 on white, below AA at 20px; the house version darkens it to about #6f6f6f). No accent: the client work supplies every hue.",
   "imagery": "Client work only: photographed objects and campaign images in acid yellow, pastel stickers, orange, gold on black. Three ratios (3:2, 3:4, 1:1), 0px radius, object-fit cover, no filters, and muted looping clips sized exactly like the image tiles. An animal drawn by script from tiny white characters in the footer.",
@@ -7953,7 +7964,8 @@
    "Keep 10px margins and gutters with square corners so the work reads like a contact sheet, pair a 3:2 with a 3:4 tile per row and swap sides on the next, and caption each in two 20px lines (name, descriptor). Close the gap under the shorter tile with its caption or a quotation; the site leaves it white."
   ],
   "media": "The fold is a black field with one small turning object at the centre, about 3-4% of the screen lit; the work then sits in a 2-up checkerboard of 3:2 and 3:4 tiles and a 4-up strip of squares with one taller tile breaking the baseline, captions underneath. Seven images and three short muted loops sized exactly like the tiles; a glyph-drawn animal animates the footer.",
-  "motion": "No preloader: the fold is complete at 400ms and only the object turns, face-on to edge-on over about 4s. Lenis and five ScrollTriggers sink and dim the hero on two scrubs and slide the white page away to uncover the fixed footer, labels rise with autoAlpha and y over 1.8s power4.out at a 0.1 stagger, arrows rotate over 0.5s power4.out, and the sticky nav's difference blend collides with busy pictures; there is no reduced-motion rule."
+  "motion": "No preloader: the fold is complete at 400ms and only the object turns, face-on to edge-on over about 4s. Lenis and five ScrollTriggers sink and dim the hero on two scrubs and slide the white page away to uncover the fixed footer, labels rise with autoAlpha and y over 1.8s power4.out at a 0.1 stagger, arrows rotate over 0.5s power4.out, and the sticky nav's difference blend collides with busy pictures; there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-vectr",
@@ -7995,12 +8007,13 @@
    }
   ],
   "steal": [
-   "Set a WebGL scene's clear colour and fog to the exact page ground, render the whole world in one matte clay tone, and keep colour for two or three signals: one glowing trail, one contrasting incoming beam, the brand colour on the mark.",
+   "Set a WebGL scene's clear colour and fog to the exact page ground, render the whole world in one matte clay tone, and keep colour for two or three signals: one bright trail, one contrasting incoming beam, the brand colour on the mark.",
    "Tell an N-step process as N camera stops in one persistent scene, about 0.95 screens of scroll per step, the step list docked bottom-left and the focal object centre-right, and end the last stop on the brand mark so the journey has a destination. The site numbers its steps; the house version shows order by position and by the active step's size.",
    "Let one neutral grotesk do all the reading and give the personality to a custom extended wordmark, repeated across 93% of the width to close the footer. The site's four icon-topped feature cards drop back into a generic kit; the house version keeps the world going with a section blueprint instead."
   ],
   "media": "One fixed WebGL canvas covers 100% of the first screen, the clay town in the lower ~60% and fog in the ground colour above it, and stays behind the first ~4700px as camera stops for the steps; then one 656x400 photograph in a split, four 96px pictograms and a giant SVG wordmark. No video.",
-  "motion": "A 2.5-4s CSS loader turns the mark from -60 degrees to 0 over 1.5s and draws two orbits over about 2s, then hero lines rise and fade over 1.5s cubic-bezier(.16,1,.3,1) at 0.1-0.5s staggers after the canvas fades in over 0.7s. Lenis moves the camera between four stops, swapping step copy over 0.5s on the same expo-out curve (44 uses in all) and opening the active body by grid-template-rows over 0.6s, while the pinned feature row adds one card per step; there is no reduced-motion rule."
+  "motion": "A 2.5-4s CSS loader turns the mark from -60 degrees to 0 over 1.5s and draws two orbits over about 2s, then hero lines rise and fade over 1.5s cubic-bezier(.16,1,.3,1) at 0.1-0.5s staggers after the canvas fades in over 0.7s. Lenis moves the camera between four stops, swapping step copy over 0.5s on the same expo-out curve (44 uses in all) and opening the active body by grid-template-rows over 0.6s, while the pinned feature row adds one card per step; there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-lpas",
@@ -8047,7 +8060,8 @@
    "Stagger a two-row mosaic big-small-small, then small-small-big, with the small pair bottom-aligned to the tall neighbour so the void above them is placed; keep one ratio and caption every image in 16px. The site's 75px hero headline runs to three lines; under the house rules cut it to two."
   ],
   "media": "A 61s muted studio video at 50% brightness covers the whole first screen and stays fixed while a rail of photo-over-colour cards slides over it; projects sit in a mirrored 8:5 mosaic, and a full-bleed dimmed photo band carries the closing list. Thirteen media elements in all, no canvas or WebGL.",
-  "motion": "Under Lenis the sector rail pins for about 4320px and travels about 836px per 900px of wheel while the incoming photo grows and pictures drift inside oversized frames. Project images wipe in with clip-path inset and opacity over 1.2s cubic-bezier(0.14,0.83,0.4,1), hovers take .3s cubic-bezier(0,0,.13,.99), the headline rises through a mask after the 4.5s loader, and there is no reduced-motion rule."
+  "motion": "Under Lenis the sector rail pins for about 4320px and travels about 836px per 900px of wheel while the incoming photo grows and pictures drift inside oversized frames. Project images wipe in with clip-path inset and opacity over 1.2s cubic-bezier(0.14,0.83,0.4,1), hovers take .3s cubic-bezier(0,0,.13,.99), the headline rises through a mask after the 4.5s loader, and there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-lacoste-polo-factory",
@@ -8090,7 +8104,8 @@
    "Dock all text to the bottom on the phone, with a full-width 56px button and 24px gutters, and move the moving object up to about 39% of the height, so the stage stays above the thumb."
   ],
   "media": "Media covers the whole first screen: a fixed ray-pattern ground, a full-screen 3D canvas in which 8-16 products take about 15-25% of the frame, and the embossed medallion set inside the type stack. The only photograph is a 200x106 oval in the promo card; no video.",
-  "motion": "The wheel never scrolls the page: each step fires a fresh burst of polos and patches from the medallion that tumble outward, grow and leave past the edges, with no new content and no progress cue. The loader cuts between colourways every 1-2s for more than 4.5s; buttons spring on cubic-bezier(.175,.885,.32,1.275) at 0.2-0.3s (an overshoot the house motion layer does not use), the promo card shakes on a 3s loop, and there is no reduced-motion rule."
+  "motion": "The wheel never scrolls the page: each step fires a fresh burst of polos and patches from the medallion that tumble outward, grow and leave past the edges, with no new content and no progress cue. The loader cuts between colourways every 1-2s for more than 4.5s; buttons spring on cubic-bezier(.175,.885,.32,1.275) at 0.2-0.3s (an overshoot the house motion layer does not use), the promo card shakes on a 3s loop, and there is no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-offfforum",
@@ -8125,7 +8140,8 @@
    "End a short page with the wordmark running the full width inside the same 16px margin as the header logo, so the footer itself is the finale. Give the ticket button at least 44px of height and 16px text; the site's 26px pill is easy to miss on a busy photograph."
   ],
   "media": "The photograph covers 100% of the first screen as two stacked cover layers crossfading in place under a scrim, with at least eight photographs seen across the captures; the footer's only picture is the wordmark. No video on the home page.",
-  "motion": "No preloader: the page is painted by 400ms and the only motion is the slideshow, a new photograph every 1.5-2s with a 0.5s ease opacity crossfade. Lenis runs on a page only 497px deep, with no pins, reveals or split text; UI moves on power2-out cubic-bezier(.32,.94,.6,1) at .3-.4s and quart-out (.25,1,.5,1) at .6s."
+  "motion": "No preloader: the page is painted by 400ms and the only motion is the slideshow, a new photograph every 1.5-2s with a 0.5s ease opacity crossfade. Lenis runs on a page only 497px deep, with no pins, reveals or split text; UI moves on power2-out cubic-bezier(.32,.94,.6,1) at .3-.4s and quart-out (.25,1,.5,1) at .6s.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-20-years-inspired-by-people",
@@ -8164,7 +8180,8 @@
    "Bring a short headline in word by word, then the body, then the button only once it settles. The site resolves each word from blur (filter 0.38s ease-out, opacity 0.5s cubic-bezier(0,0,0.2,1)); the house version uses opacity with a 16-24px rise, and keeps any loader under 2s."
   ],
   "media": "One fixed fullscreen WebGL colour field covers 100% of the first screen and is the only picture. Text sits on its darker upper middle with no scrim, the brightest glow pool is placed under the button, and every real image is kept behind one click.",
-  "motion": "After a black loader that shows only a dot for over 4.5s, the headline resolves word by word from blur to sharp (84 split characters; opacity 0.5s cubic-bezier(0,0,0.2,1), filter 0.38s ease-out). After that only ambient drift and an 8s stepped grain loop move; the home ignores the wheel (scrollY stays 0) and a cursor lens smears the letters it rests on."
+  "motion": "After a black loader that shows only a dot for over 4.5s, the headline resolves word by word from blur to sharp (84 split characters; opacity 0.5s cubic-bezier(0,0,0.2,1), filter 0.38s ease-out). After that only ambient drift and an 8s stepped grain loop move; the home ignores the wheel (scrollY stays 0) and a cursor lens smears the letters it rests on.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-hearst-exhibit-2026",
@@ -8203,7 +8220,8 @@
    "Let the photographs be the only colour: a black ground, white type and nothing else in the palette, so the two covers glow like lit prints on a dark wall."
   ],
   "media": "During the intro the canvas covers 100% of the screen but the flying covers fill only about 15%, packed into the right half; the settled chooser shows two covers on about 16% of the viewport with the rest black. No video; about a dozen further covers exist only as WebGL textures.",
-  "motion": "Lockup words fade in over 800ms on cubic-bezier(0.65,0.05,0.36,1) at delays from 1000 to 2500ms while a script connective writes itself in eight strokes; the lockup leaves with opacity and a 0-6px blur over 800ms, the covers storm in, and the question arrives over 1200ms on cubic-bezier(0.77,0,0.18,1). About 5s pass before the choice can be made, with no skip and no reduced-motion rule, and a grain layer jitters at 0.15s steps forever."
+  "motion": "Lockup words fade in over 800ms on cubic-bezier(0.65,0.05,0.36,1) at delays from 1000 to 2500ms while a script connective writes itself in eight strokes; the lockup leaves with opacity and a 0-6px blur over 800ms, the covers storm in, and the question arrives over 1200ms on cubic-bezier(0.77,0,0.18,1). About 5s pass before the choice can be made, with no skip and no reduced-motion rule, and a grain layer jitters at 0.15s steps forever.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-meer-mohsin",
@@ -8250,7 +8268,8 @@
    "Scale a small card into a full-bleed band and scale its heading with it, so a statement arrives as an event instead of a fade. The site wedges a script word into its headlines; under the house rules a headline stays in one face and one colour."
   ],
   "media": "On the fold the 3D emblem covers about 15% of the area as two halves on a black void; with the headline it takes about 60% of the centre. Pictures arrive as a centred flipping deck, a card that grows into a full-bleed band, and a vertical carousel over a blurred copy of itself: 29 images, three canvases, a full-viewport line diagram, no video.",
-  "motion": "Lenis drives a scroll-scrubbed Three.js emblem that changes pose and scale per section across three pins of about 5440, 4560 and 4440px. Split words (297 elements) drift into lines on transform 2s cubic-bezier(0.075,0.82,0.165,1), skills type out character by character, panels move over .45s cubic-bezier(.23,1,.32,1), and grain (0.09s steps), a 12s ring and a fluid field loop forever with no reduced-motion rule; load took about 6.6s."
+  "motion": "Lenis drives a scroll-scrubbed Three.js emblem that changes pose and scale per section across three pins of about 5440, 4560 and 4440px. Split words (297 elements) drift into lines on transform 2s cubic-bezier(0.075,0.82,0.165,1), skills type out character by character, panels move over .45s cubic-bezier(.23,1,.32,1), and grain (0.09s steps), a 12s ring and a fluid field loop forever with no reduced-motion rule; load took about 6.6s.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-gionatan-nese-26",
@@ -8285,7 +8304,8 @@
    "Run the page at text size and let placement make the hierarchy only if the layout supplies the drama. The site has no title at all; the house version still puts the name and what the person does in a clear h1 on the first screen."
   ],
   "media": "One full-screen WebGL canvas holds about twenty image textures as cards on a centred sphere; clearly non-white pixels add up to only 2-3% of the screen. No img or video elements and no drawings.",
-  "motion": "A white loader assembles the monogram letter by letter while a serif counter ticks for over 5s, although the document loaded in 916ms. After that each wheel step turns the card sphere and eases it to rest, with no page scroll and no end; pills ease on cubic-bezier(.65,0,.35,1) at 0.2-0.45s, and there are no keyframes, no split text and no reduced-motion rule."
+  "motion": "A white loader assembles the monogram letter by letter while a serif counter ticks for over 5s, although the document loaded in 916ms. After that each wheel step turns the card sphere and eases it to rest, with no page scroll and no end; pills ease on cubic-bezier(.65,0,.35,1) at 0.2-0.45s, and there are no keyframes, no split text and no reduced-motion rule.",
+  "panel": "2026-10"
  },
  {
   "id": "aww-noomo-showcase",
@@ -8319,11 +8339,12 @@
    }
   ],
   "steal": [
-   "Turn the loader into the logo: make one round letter of the wordmark a capsule whose length is the progress, docked bottom-left at about 80px tall and growing from about 36% to 92% of the width. Cap the wait near 2s and never let it hold at one value.",
+   "Make one round letter of the wordmark a capsule that stretches, docked bottom-left at about 80px tall and growing from about 36% to 92% of the width. The site uses it as the progress of a loader; the house rules allow no preloader, so here it is the entrance: the page is readable on the first frame and the letter stretches once within 1.2s.",
    "Let one statement be the whole hero, justified edge to edge with tight gutters and centred vertically with about 170px of ground above and below. The site runs it to five lines inside the canvas; under the house rules the headline is two lines, in the DOM, with a short paragraph under it for the rest.",
    "Give the brand glyph a job: cut the logo's distinctive letterform as a window through a picture and treat what shows inside differently, so the mark reads as part of the content. The site cuts it through the headline, which the house rules forbid."
   ],
   "media": "The canvas covers 100% of the first screen: the type plane takes about 97% of the width and 47% of the height, and the glitch cross with its spheres about 25% by 47% at the centre. One img (the header logo), one Three.js canvas, no video; any case-study pictures sit behind the click.",
-  "motion": "The loader counts to 91% while one letter stretches into a capsule, stalling at 40% from 2.5s to at least 4.5s; the hero then opens in its electric-blue state and drains to monochrome on a timer, not on scroll, and the wheel does nothing until the button is clicked. The cross glitches the canvas type live, spans change filter over 0.4s and the header translates over 0.5s (both on cubic-bezier(0.65,0.05,0.36,1)), and a 2s bounce loop nudges the button arrow, with no reduced-motion rule."
+  "motion": "The loader counts to 91% while one letter stretches into a capsule, stalling at 40% from 2.5s to at least 4.5s; the hero then opens in its electric-blue state and drains to monochrome on a timer, not on scroll, and the wheel does nothing until the button is clicked. The cross glitches the canvas type live, spans change filter over 0.4s and the header translates over 0.5s (both on cubic-bezier(0.65,0.05,0.36,1)), and a 2s bounce loop nudges the button arrow, with no reduced-motion rule.",
+  "panel": "2026-10"
  }
 ]

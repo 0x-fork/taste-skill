@@ -179,7 +179,7 @@ are from the study of 97 Sites of the Day (October 2026).
   screens in the study mostly 50–150px), two lines at most, that says what this is: the name with
   what it does, the product with what it is for, the event with its date and place. If the `h1` is
   the name, the line under it, at 18px or more, says what the thing is.
-- It is there on the first paint. 29 of the 97 still showed a loader or nothing readable at 4.5
+- It is there on the first paint. About a third of the studied pages still showed a loader or nothing readable 4.5
   seconds.
 
 **A heading on every section.**

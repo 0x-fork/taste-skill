@@ -400,9 +400,11 @@ function dealSection(dir, role, usedIds, prevShape, nextShape, input) {
 }
 function dealReferences(dir, input) {
   const named = (dir.seenIn || []).map((n) => L.sites.find((s) => s.id === n || s.name === n)).filter(Boolean);
-  const sameKind = L.sites.filter((s) => s.kind === input.sector && s.score >= 7.2 && !named.includes(s));
+  // the October 2026 panel scored on a lower scale (its top band starts at 7.5, the first panel's at about 7.6)
+  const good = (s, a, b) => s.score >= (s.panel === '2026-10' ? b : a);
+  const sameKind = L.sites.filter((s) => s.kind === input.sector && good(s, 7.2, 7.3) && !named.includes(s));
   const out = [...shuffle(named).slice(0, 2), ...shuffle(sameKind).slice(0, 1)];
-  return out.length ? out : shuffle(L.sites.filter((s) => s.score >= 7.6)).slice(0, 2);
+  return out.length ? out : shuffle(L.sites.filter((s) => good(s, 7.6, 7.5))).slice(0, 2);
 }
 
 // ---------- rendering ----------

@@ -60,7 +60,7 @@ the gallery does something the house rules ban, the house version follows.
   site is 420 ms.
 - **Staggers.** 20-40 ms between characters, 75-120 ms between lines, 50-100 ms between list items.
 - **Scroll-linked motion is locked to the scrollbar.** Of the sites that scrub, 14 of 18 lock it with
-  no smoothing; the rest smooth by 0.25-1 s. Reveals fire when the element's top is 80-95% of the way
+  no smoothing; the other four smooth it by 0.1-3 s. Reveals fire when the element's top is 80-95% of the way
   down the viewport, once.
 - **How much moves.** A median of 130 elements are moved by script on a page, but they come from a
   few gestures: one split heading is 20-60 elements. The inspector's floor (8, warning under 16) is a
@@ -354,7 +354,7 @@ follows the row, never the pointer.
 @media (hover: hover) and (pointer: fine) {
   .index__list { max-width: 62%; }
   .index__thumb { display: none; }
-  .index__list:has(.index__row:hover, .index__row:focus-visible) .index__row:not(:hover, :focus-visible) { opacity: 0.35; }
+  .index__list:has(.index__row:hover, .index__row:focus-visible) .index__row:not(:hover, :focus-visible) { opacity: 0.4; }
   .index__frame { display: block; position: absolute; top: 0; right: var(--margin); width: 30%; aspect-ratio: 4 / 3; z-index: 1; pointer-events: none; clip-path: inset(100% 0 0 0); transition: clip-path 320ms var(--ease-out), transform 360ms var(--ease-out); }
   .index__frame.is-open { clip-path: inset(0); }
   .index__frame img { width: 100%; height: 100%; object-fit: cover; }
@@ -393,7 +393,7 @@ follows the row, never the pointer.
 ```
 
 On touch screens each row shows its own picture above the name. Study: 5 pages navigate work this way;
-frames from about 470x270 to large plates behind the list; the other rows dimmed to about 0.3. The
+frames from about 470x270 to large plates behind the list; the other rows dimmed to about 0.3 (0.4 here, the floor for dimmed text). The
 image trails and cursor-borne previews seen elsewhere in the study are the gimmick version.
 
 ### Lines that rise on scroll
