@@ -34,6 +34,25 @@ Taking the template's devices away is half the job, as it is on a page. The othe
 the product's real data, a screen that answers its one question first, and a grid whose arithmetic
 closes.
 
+**A warning learned in testing.** In the first blind round, screens built with this chapter were
+clean, quiet and correct, and they lost to richer screens built without it. The judges' reasons were
+the same every time, and each is now a rule below:
+
+- **The first screen was thin.** One large chart of a flat line filled it, and half the blocks the
+  brief asked for started below the fold. On a 1440×900 screen, every block the brief names shows its
+  header and its first rows (§2.2).
+- **The product was missing.** No name, no workspace, no mark: the screen could have belonged to
+  anyone. The shell names the product and the scope (§3.2).
+- **Restraint hid meaning.** A latency rise and a request rise were the same grey. Colour on a change
+  says good or bad, not up or down (§5).
+- **There was nothing to do.** No control for the job the screen exists for. The most frequent job is
+  one click from the first screen (§2.2).
+- **Rows ended ragged** and **a style's move was over-applied** (a tray around every card, an icon
+  rail where people needed labels). Keep the move to where it carries meaning.
+
+Quiet is the starting point, not the goal. A screen that a person would trust shows more of the
+product than a template does: its people, its objects, its numbers and the one thing to do next.
+
 ## Contents
 
 1. When this applies
@@ -88,12 +107,19 @@ in 8 to 12 lines:
 - **the people**: who opens this screen, how often (a glance once a day, or an eight-hour session),
   on what device;
 - **the jobs**: what they do next from here (approve, reply, pay, ship, invite), and which job comes
-  up most.
+  up most;
+- **the product's own things**: its name and mark, the workspace or account it is scoped to, the people
+  in it (two partners, a team of six, the club's members), and the objects people recognise by sight
+  (product photographs in a shop, cover art in a media tool, a map of the route). These are what make
+  a screen belong to this product instead of to a template; plan where each one appears.
 
 Then write the data itself: a small dataset in a JSON or JS file that the screen renders from, with
 believable names, amounts that add up to their totals, dates in order and a unit on every figure.
 Totals are computed from the rows, never typed in separately. Small numbers stay small: the studied
-screens show new accounts with 1, 6 or 9 of something, drawn honestly at their real size.
+screens show new accounts with 1, 6 or 9 of something, drawn honestly at their real size. Write the
+figures that must agree as assertions in the data file (`console.assert(sold - cancelled === rsvps)`,
+the bins sum to the total, the parts to the whole) and read the console: in testing, a ticket table
+that did not reconcile with its own KPI cost a judge's trust in the whole screen.
 
 ### 2.2 Name the screen's one question
 
@@ -112,6 +138,21 @@ three things:
 Then list the screen's blocks as the answers to its next questions, one line each, the way the page
 run lists claims. A block with no question is deleted. This is how you avoid the stock order of KPI
 row, big chart, two small charts, table.
+
+Three more lines, each tested:
+
+- **Everything the brief names is on the first screen.** At 1440×900, every block the brief asks for
+  shows its header and its first rows or its figure. Size the headline block to the question (about
+  200-360px tall), cap long lists at 4-6 rows with "View all", and put time-sensitive blocks (bills
+  due, SLAs running out, a failed deploy) before long tables. A chart whose line is flat for most of
+  the window does not get the full width: give it two-thirds and put the next answer beside it.
+- **The most frequent job is one click away.** Name it ("pack the orders due today", "reply to the
+  oldest breach", "redeploy the failed build") and put its control where the answer shows: a primary
+  button in the title row, an action on the row that needs it, a "View logs" on the failed item. A
+  screen with no control for its main job reads as a report, not as a tool.
+- **Show the evidence beside the answer.** A judge trusts "Error rate 0.28%" more with its spike
+  annotated ("peaked at 3.9% after the 23:28 deploy, reverted") than with the number alone. One line
+  of explanation on the event that matters is worth more than a second chart.
 
 ### 2.3 Choose a style
 
@@ -244,6 +285,13 @@ No screen in the study puts a dark or saturated sidebar against a light canvas (
 - **Top and bottom.** The workspace or account switcher at the top of the sidebar (7 screens), at its
   bottom (2), or in the top bar. The bottom holds a user row (8) or one upsell (8); one of those
   upsells is a filled accent button.
+- **The product is named** (house rule, from testing). The product's mark and name sit at the top of
+  the sidebar or rail, and the scope (workspace, team, project, account) is shown as a switcher or a
+  breadcrumb. A screen whose product cannot be named from the screenshot reads as a template.
+- **Labels by default.** A labelled sidebar unless the product has five destinations or fewer and the
+  screen needs the width (a research or monitoring view); an icon rail always carries the product's
+  mark at the top, a tooltip and an accessible name on every icon. Nav items are other screens, never
+  anchors into the current page (a sidebar that scroll-spies one long page was marked down twice).
 
 ### 3.3 Top bar
 
@@ -298,7 +346,18 @@ inspector warns when the content stops well short of the right edge.
 screens): four KPI tiles in a three-column grid, orphaning the fourth; one card alone in a
 three-column row beside 810px of nothing; a card stretched to its neighbour's height with 250px of
 blank under its legend. Choose the column count from the number of items, let a lone card span, and
-do not match heights when the contents differ.
+do not stretch a card's frame over empty space.
+
+**Cards that share a row share a bottom edge.** In testing, rows whose cards stopped 26-190px apart
+were marked down every time, by judges and by the inspector (`ragged-row`). Balance the row by its
+content first: move a list's rows so the two columns hold the same number, cap both lists at the same
+count, or pair blocks of similar height. Only when the contents cannot balance, stack the two blocks,
+or let the shorter card fill the row height with its content top-aligned and the footer action (a
+"View all", a total) pinned to its bottom so the extra height is not a hole.
+
+**Narrow blocks do not span the canvas.** A table of five columns or fewer, or a list of six rows or
+fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1300px it leaves
+400-600px voids between a name and its first figure.
 
 ### 4.3 The title
 
@@ -357,6 +416,11 @@ do not match heights when the contents differ.
 - **The window in words**: "vs prior 30 days", "in the last 90 days", "from 0 (last 4 weeks)" (7 of
   the 9).
 - **Colour only the number**, or set the whole delta in grey.
+- **Colour says good or bad, not up or down** (house rule, from testing). Every metric has a good
+  direction: latency, error rate, cost, churn and time-to-reply are better when they fall. A change
+  in the bad direction puts `--negative` on the number (or a small down-pointing glyph in that
+  colour); a change in the good direction is `--positive` or grey. A judge read a 2.5× rise in errors
+  set in the same grey as a rise in visits as hiding the screen's only bad news.
 - **Zero or undefined change is grey.** The study's commonest KPI failure is a zero or undefined change
   shown as a signal: three identical green "up 100%" pills grown from zero, a ">999%", a bold red
   "0.00%", a green "+0". When the prior period was zero, write "+4 (new)"; when there is nothing to
@@ -371,9 +435,11 @@ do not match heights when the contents differ.
 | Is it moving over time? | One line; an area only with a fill of 15% or less | 9 screens |
 | How much per period? | Columns with square corners | 3 |
 | How is it distributed? | A histogram with equal bins | 1 (its unequal bins are flagged) |
-| Who ranks? | A sorted horizontal bar list, or the table row's fill as the bar | 3 |
+| Who ranks? | A sorted horizontal bar list, or the row's fill as the bar in a one-figure list | 3 |
 | What share? | A thin ring, or a 100% stacked bar with 2px seams; five parts at most | 5 |
 | How far to the target? | A progress bar, both ends labelled, the fill the true ratio | 4 |
+| How much of the plan is used? | A track as long as the plan, the spent part filled, what is already committed as a lighter segment, an overrun past the track's end in the negative colour (`Charts.plan`) | house rule |
+| Has it drifted from its target? | One row per part: the current share as a bar with a 1px tick at the target (`Charts.bullet`); never two stacked bars to compare | house rule |
 | Where? | A map with a list beside it; the list carries the magnitudes | 1 |
 | Per period, and the running total? | The two side by side at equal width, with the same dates | 1 |
 
@@ -433,6 +499,14 @@ to 5.2.
   and "Expert 2,000"); the fill is the true ratio, so 303 on that scale fills 22px of 392. A zero has
   no stub (a 6px stub at zero is flagged).
 - **Tooltips** are bare text or a plain box without an arrow: label and value on one line.
+- **Annotate the event that matters.** A step or a spike more than about three times the usual change
+  gets a 1px marker and a 12px label naming its cause ("Deploy a3f09c1", "Newsletter featured");
+  reference lines (a budget, an SLO, a start time) are 1px dashed with their label at the end. In
+  testing, an unexplained jump was the first thing a judge asked about. `Charts.line` and
+  `Charts.bars` take `annotations` and `reference`.
+- **Use the helper, then extend it.** Draw charts with `assets/charts.js` and add what a chart needs to
+  it, rather than writing new axis code: in testing, every chart written from scratch on a phone put
+  its y labels on top of its line.
 - **Short and empty histories are drawn honestly**: a flat zero line with one spike, missing bars for
   empty periods, no padded y-range, no "No data" picture. Do not give one point the screen's largest
   plot, though: a lone dot in a full-size grid reads as barren (flagged once).
@@ -506,8 +580,13 @@ to 5.2.
   #04250e, #ffedea with #831c1e.
 - Neutral states are monochrome chips with a glyph ("Public" with a globe).
 - A state machine uses one hue at three intensities: grey for off, the full hue for the call to
-  action, a dark tint for running. A saturated fill with white text only for that one call to action.
+  action, a dark tint for running. A saturated fill with white text only for that one call to action,
+  and only while it is rare: when more than about a fifth of the visible rows carry it, it becomes a
+  stripe of black blobs louder than the data (marked down in testing); use the pale pair or a 6px dot
+  with an ink label instead.
 - **One status mark per row.** A tag and a badge that say the same thing are flagged.
+- **A chip is never squeezed.** Tags and pills are `flex: none; white-space: nowrap`: in testing a
+  table column collapsed an environment chip to a 12px box with its word spilling out.
 
 ### 7.7 Media
 
@@ -520,10 +599,15 @@ list so the text starts on one edge (a 50px slot with the text 16px after it). M
 
 - **No pagination on an overview** (0 of 23). Cap the rows and link out: "View all" in the section
   header, a 30px outlined button under the list, a full-width 32px bar. State the total ("3 tracks").
-- Row actions: none on 9 screens; otherwise one kebab at the far right.
+- Row actions: none on 9 screens; otherwise one kebab at the far right. When a row needs doing
+  (a bill to pay, an order to pack, a failed deploy), its action is a visible ghost button or an ink
+  text action in one fixed trailing column, at the same pitch for every row; never muted grey text,
+  and never stacked under the amount so the rows change height.
 - Checkboxes only where bulk actions exist (one screen: 18px, 2px stroke, 3px radius).
 - Hover and selected: a 1px outline at 6px radius overhanging the panel by 1px, or a darker border
-  with a 1px ring. No hover that changes the fill was seen.
+  with a 1px ring. No hover that changes the fill was seen. In a list that drives a detail pane (an
+  inbox, a queue), the selected row takes the `--active` fill of the nav pill instead, so it cannot be
+  mistaken for a focus ring or a hover (house rule, from testing).
 - Toolbar: one search, 30-36px tall (256x30, 252x36, 316x32).
 - **A full list screen** (house rule; the study has none): state the total above the table, keep the
   header row in view while scrolling, and page or load more at the end with the range shown
@@ -532,7 +616,9 @@ list so the text starts on one edge (a 50px slot with the text 16px after it). M
 ### 7.9 Lists that carry data
 
 - **The row fill is the bar**: the row's rounded background (radius 8) as wide as its share of the
-  largest share; 44px rows, 2px gaps.
+  largest share; 44px rows, 2px gaps. Only in a one-figure ranking list (a label and one value): in a
+  row with several columns or two lines, the fill's edge cuts through the words (failed in testing).
+  Planned against spent is a separate 6-8px track under the label (`Charts.plan`).
 - **Bar list**: a 64px pitch, a label line, then a 10px pill bar with the value 5px after its end; the
   longest bar about 88% of the width; one colour, no track.
 - **Legend as table**: dot, name, pill, value and change on a 57px pitch.
@@ -581,6 +667,17 @@ enough for the defaults.
 - **Destructive actions** (house rule; none in the study) go last, in a section of their own, as a
   text or outlined button in the negative colour, with the consequence in words and a confirmation
   that names the object.
+- **One view per area** (house rule, from testing). When settings span several areas (general,
+  members, billing, notifications), each sidebar item opens its own view (a hash route is enough in
+  a static build), with the area's name as the h1. One long page of every area, with the sidebar
+  scrolling to anchors, put the first area the brief named four screens down and was marked down.
+- **One save model per view**: every control saves itself and shows a quiet "Saved" stamp, or one
+  Save per panel at the panel's bottom right. Never a mix of both on one view.
+- **Show what the setting produces.** Beside the control that changes it, a small preview of the
+  result (the invite email, the notification as it will arrive, the plan's next invoice) is the
+  product-specific substance a settings screen otherwise lacks.
+- A settings view opens with a usage strip only when usage is its question (a plan or quota view),
+  and its figures stay smaller than its h1.
 
 ### 8.3 Buttons
 
@@ -594,7 +691,11 @@ white with a 1px border; a tertiary is text. The controls in one row share one h
 
 - **One grotesk.** All 23 screens use a neo-grotesk, and 14 use that one family alone. A second face
   always has one job: a monospace for every number or for IDs only, a serif for one greeting, a brand
-  face kept to the wordmark or the switcher. Never three.
+  face kept to the wordmark or the switcher. Never three. Axis ticks, chart notes and labels stay in
+  the text face even when IDs are in a monospace.
+- **App type is not display type.** The h1 stays at 18-32px and no figure reaches 48px: in testing, a
+  50px serif title and a 76px balance made a budgeting screen read as a landing page (the inspector
+  warns at 34px and 48px).
 - **Sizes**:
 
 | Role | Range in the study | Median |
@@ -778,14 +879,22 @@ takes more than 30% of a phone's width.
   than 12px.
 - **The title stays**, at 20-24px. Header actions move into a kebab, except the one primary.
 - **Filters** collapse into one row of chips or a Filters sheet; tabs scroll sideways inside their own
-  row, never the page.
+  row, never the page. The first list row starts in the top 60% of the phone screen: three rows of
+  filter controls above it pushed the list off the first screen in testing.
 - **KPIs**: a divided container becomes a 2-column grid, or a list with the label on the left and the
   value on the right. Never four squeezed columns.
-- **Charts** go full width, 160-200px tall, with 3-4 x labels, the y ticks inside the plot area and a
-  legend of dots above.
-- **Tables become lists of two-line rows**: the identity and the key number on line 1, two or three
-  secondary fields in 13px grey on line 2, the one action at the right. A table that must stay a table
-  scrolls inside its own frame with its first column fixed; the page never scrolls sideways.
+- **Charts** go full width, 160-200px tall, with 3-4 x labels and a legend of dots above. The y ticks
+  keep their own lane at the left (or move to the right edge); a tick label never sits on the line.
+- **Tables become lists of two-line rows below about 640px**: the identity and the key number on line
+  1, the other fields the brief names in 13px grey on line 2 ("fra1 · 1m 38s"), the one action at the
+  right. Fields move to line 2; they are never dropped. A table that must stay a table scrolls inside
+  its own frame with its first column fixed; the page never scrolls sideways.
+- **The tablet (641-1100px) is its own band**: the sidebar folds to the top bar, but tables keep four
+  or five columns with secondary fields as sublines, two narrow panels stack once either would be
+  under about 340px, and the identity column is never the one truncated while another has room.
+- **Blocks that carry an action move up, not down**: a right rail with an action (low stock and its
+  Reorder, bills due and Pay) becomes a one-line summary row above the list ("5 items low · Review"),
+  never a block under twenty orders.
 - **Several panes** (a list and its detail, an inbox): one region at a time. Choosing a row pushes the
   detail; back returns to the list at its scroll position.
 - **Settings**: the label column stacks above its panel.
@@ -832,6 +941,10 @@ Still banned, as on pages, and checked:
 | A hero header, a greeting with an emoji, an illustrated welcome banner | A noun title at 24px |
 | Pagination under a five-row overview list | Capped rows, "View all", the total |
 | Violet and indigo accents; cream with terracotta | The dealt style's palette |
+| A landing-page title (over 32px) or a figure at 48px or more | An 18-32px title; figures at 16-40px |
+| Icons in boxes repeated down a list or on top of every peer card, tinted or neutral | One plain 16px icon where it helps, or none |
+| Every row a different hue, a "left" amount in green on every budget row | Grey for what is fine; colour only on the rows at risk or over |
+| A screen that names no product and offers no action | The product's mark and scope in the shell; its main job one click away |
 
 **On violet and indigo.** 10 of the 23 studied screens use violet or indigo, always as a data hue or a
 single control. The ban is the owner's taste, not a finding of the study: the library deals other

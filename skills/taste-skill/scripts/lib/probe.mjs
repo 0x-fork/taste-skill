@@ -699,7 +699,7 @@ export function app() {
     const sh = cs.boxShadow !== 'none' ? cs.boxShadow : '';
     if (!filled && !bordered && !sh) continue;
     if (!(el.innerText || '').trim()) continue;
-    panels.push({ w: Math.round(r.width), h: Math.round(r.height) });
+    panels.push({ el, w: Math.round(r.width), h: Math.round(r.height), top: Math.round(r.top + SY), left: Math.round(r.left), bottom: Math.round(r.bottom + SY), right: Math.round(r.right) });
     const rad = Math.round(parseFloat(cs.borderTopLeftRadius) || 0); radii.set(rad, (radii.get(rad) || 0) + 1);
     if (bordered) { const c = contrast({ ...bc, a: 1 }, bg.a >= 0.9 ? bg : ground); if (c >= (lum(ground) > 0.4 ? 1.45 : 1.9)) { heavyBorders++; if (borderSamples.length < 3) borderSamples.push(`${hex(bc)} on ${hex(bg.a >= 0.9 ? bg : ground)} (${c}:1)`); } }
     if (sh) {
@@ -714,13 +714,25 @@ export function app() {
     }
     if (cs.backdropFilter && cs.backdropFilter !== 'none') glass++;
   }
-  // 4. the icon-in-a-tinted-square habit: small boxes with a coloured fill holding one icon, repeated
-  const chips = [];
+  // top-level panels only (a card inside a panel is part of it): rows that end ragged, and how many
+  // panels start on the first screen
+  const panelEls = new Set(panels.map((p) => p.el));
+  const tops = panels.filter((p) => { for (let a = p.el.parentElement; a && a !== B; a = a.parentElement) if (panelEls.has(a)) return false; return p.w < W * 0.97 || p.h < H * 2; });
+  const ragged = [];
+  for (let i = 0; i < tops.length; i++) for (let k = i + 1; k < tops.length; k++) {
+    const a = tops[i], b = tops[k];
+    if (Math.abs(a.top - b.top) > 4 || a.w < 200 || b.w < 200 || (a.right > b.left - 4 && b.right > a.left - 4)) continue; // side by side, same row
+    const diff = Math.abs(a.bottom - b.bottom), tall = Math.max(a.h, b.h);
+    if (diff > Math.max(24, tall * 0.12)) ragged.push({ diff, top: a.top });
+  }
+  const firstScreen = tops.filter((p) => p.top < H - 48).length;
+  // the icon-in-a-tinted-square habit: small boxes with a coloured fill holding one icon, repeated
+  const chips = []; let tiles = 0;
   for (const el of all) {
     const r = el.getBoundingClientRect(); if (r.width < 24 || r.width > 64 || Math.abs(r.width - r.height) > 4) continue;
     const cs = getComputedStyle(el); const bg = rgba(cs.backgroundColor); if (bg.a < 0.08) continue;
     const icon = el.querySelector('svg, i, img, [class*="icon" i]'); if (!icon || (el.innerText || '').trim().length > 2) continue;
-    const c = hsl(bg); if (c.s < 0.18 && bg.a > 0.5) continue; // a neutral grey square is an avatar or a plain button
+    const c = hsl(bg); if (c.s < 0.18 && bg.a > 0.5) { if (r.width >= 28 && !el.closest('button, a, nav, aside, [role="navigation"]')) tiles++; continue; } // neutral: an avatar, a button, or a boxed icon
     chips.push({ hue: c.h, size: Math.round(r.width), radius: cs.borderTopLeftRadius });
   }
   const chipHues = new Set(chips.map((c) => Math.round(c.hue / 30)));
@@ -755,6 +767,8 @@ export function app() {
   return {
     viewport: { w: W, h: H }, dark: lum(pageBg) < 0.2, ground: hex(pageBg),
     sidebar, topbar, canvas,
+    layout: { panels: tops.length, firstScreen, ragged: ragged.slice(0, 6) },
+    tiles,
     panels: { count: panels.length, radii: [...radii.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6), heavyBorders, borderSamples, heavyShadows, softShadows, shadowSamples, glass },
     chips: { count: chips.length, hues: chipHues.size, samples: chips.slice(0, 4) },
     numbers: { cells: cells.length, leftAligned: leftNums, figures: figures.length, tabularShare, kpiMax: figures.length ? Math.max(...figures.map((f) => f.size)) : null },
