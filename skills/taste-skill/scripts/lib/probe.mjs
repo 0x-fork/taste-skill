@@ -589,7 +589,8 @@ export function layout() {
   }
   const flow = boxes.filter((b) => b.layer !== 'fixed');
   // 1. the frame: how far the page's content comes to each edge (full-bleed things say nothing about margins)
-  const framed = flow.filter((b) => b.r - b.l < W * 0.97 && b.r > 0 && b.l < W);
+  // a row that runs off one edge (a carousel, a bled display line) says nothing about that side's margin
+  const framed = flow.filter((b) => b.r - b.l < W * 0.97 && b.l >= -1 && b.r <= W + 1);
   const L = framed.length ? Math.max(0, pct(framed.map((b) => b.l), 0.02)) : null;
   const R = framed.length ? Math.max(0, W - pct(framed.map((b) => b.r), 0.98)) : null;
   // 2. sections: descend through single wrappers, then take the blocks
@@ -612,8 +613,15 @@ export function layout() {
     const headRe = /^H[1-4]$/;
     const heading = text.filter((b) => (b.el.closest('h1,h2,h3,h4,[role="heading"]') || b.size >= Math.max(22, bodySize * 1.35)) && b.t <= top + Math.max(520, (bot - top) * 0.45)).sort((a, b) => b.size - a.size)[0];
     const cs = getComputedStyle(s);
+    // the widest stretch across the section's content band that nothing covers, edge to edge excluded
+    let middle = 0;
+    if (own.length >= 2) {
+      const iv = own.map((b) => [Math.max(0, b.l), Math.min(W, b.r)]).sort((a, b) => a[0] - b[0]);
+      let end = iv[0][1];
+      for (const [a, b2] of iv.slice(1)) { if (a > end) middle = Math.max(middle, a - end); end = Math.max(end, b2); }
+    }
     return {
-      sel: sel(s), tag: s.tagName.toLowerCase(), top: Math.round(top), height: Math.round(r.height), words, media: media.length,
+      sel: sel(s), tag: s.tagName.toLowerCase(), top: Math.round(top), height: Math.round(r.height), words, media: media.length, middle: Math.round(middle),
       heading: heading ? { text: heading.text, size: Math.round(heading.size), tag: (heading.el.closest('h1,h2,h3,h4,h5,h6') || heading.el).tagName.toLowerCase() } : null,
       left: own.length ? Math.round(Math.max(0, Math.min(...own.map((b) => b.l)))) : null, right: own.length ? Math.round(Math.max(0, W - Math.max(...own.map((b) => b.r)))) : null,
       textLeft: text.length ? Math.round(Math.min(...text.map((b) => b.l))) : null, textRight: text.length ? Math.round(W - Math.max(...text.map((b) => b.r))) : null,
@@ -636,14 +644,20 @@ export function layout() {
   // 4. the title
   const h1s = [...document.querySelectorAll('h1')].filter((h) => { const r = h.getBoundingClientRect(); return r.width > 0 && r.height > 0 && shown(h); }).map((h) => { const r = h.getBoundingClientRect(); return { text: (h.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80), size: Math.round(parseFloat(getComputedStyle(h).fontSize)), top: Math.round(r.top + SY), firstScreen: r.top + SY < H * 0.95 }; });
   // 5. text pressed against the edge of the screen (type deliberately bled past the edge is a different device)
-  const edge = W < 600 ? 12 : 16;
-  const edgeText = flow.filter((b) => b.kind === 'text' && b.chars >= 3 && b.size < 40 && b.l >= -1 && b.r <= W + 1 && (b.l < edge || b.r > W - edge) && !b.el.closest('[class*="marquee" i],[class*="ticker" i],marquee,[data-ui],table')).slice(0, 8).map((b) => ({ text: b.text, side: b.l < edge ? 'left' : 'right', px: Math.round(b.l < edge ? b.l : W - b.r) }));
+  // fixed headers and corner labels count here: that is where text most often creeps to the edge
+  const edge = 16;
+  const edgeText = boxes.filter((b) => b.kind === 'text' && b.chars >= 3 && b.size < 40 && b.l >= -1 && b.r <= W + 1 && (b.l < edge || b.r > W - edge) && !b.el.closest('[class*="marquee" i],[class*="ticker" i],marquee,[data-ui],table')).slice(0, 8).map((b) => ({ text: b.text, side: b.l < edge ? 'left' : 'right', px: Math.round(b.l < edge ? b.l : W - b.r) }));
+  // a fixed picture layer that covers the screen (a canvas scene, a film) hides what the DOM cannot see
+  const stage = boxes.some((b) => b.layer === 'fixed' && b.kind === 'media' && (b.r - b.l) * (b.b - b.t) >= W * H * 0.9);
+  // the first screen: is the title a bare name, with nothing at reading size saying what this is?
+  const firstText = flow.filter((b) => b.kind === 'text' && b.t < H * 0.95 && b.size >= 18 && !b.el.closest('h1, nav, header nav, button, a'));
+  const explains = firstText.some((b) => b.text.split(' ').length >= 6 || b.chars >= 36);
   // 6. left edges used by running text and headings (left-aligned blocks only)
   // headings and paragraphs only: the items of a grid or a list each start their own column on purpose
   const lefts = flow.filter((b) => b.kind === 'text' && b.size >= 14 && !/center|right|end/.test(b.align) && b.l >= 0 && (b.el.closest('h1, h2, h3') || (b.chars >= 60 && b.el.closest('p, blockquote'))) && !b.el.closest('nav, footer, [data-ui], table, li, figcaption')).map((b) => b.l).sort((a, b) => a - b);
   const edges = []; for (const x of lefts) { const e = edges.find((g) => Math.abs(g.x - x) <= 10); if (e) e.n++; else edges.push({ x: Math.round(x), n: 1 }); }
   edges.sort((a, b) => b.n - a.n);
-  return { viewport: { w: W, h: H }, pageH, margins: { left: L == null ? null : Math.round(L), right: R == null ? null : Math.round(R) }, sections, gaps, h1s, edgeText, edges: edges.slice(0, 12), leftBlocks: lefts.length, bodySize };
+  return { viewport: { w: W, h: H }, pageH, margins: { left: L == null ? null : Math.round(L), right: R == null ? null : Math.round(R) }, sections, gaps, h1s, edgeText, edges: edges.slice(0, 12), leftBlocks: lefts.length, bodySize, stage, explains };
 }
 
 // app() measures what an app screen (dashboard, admin, settings, inbox) gets right or wrong: the shell,

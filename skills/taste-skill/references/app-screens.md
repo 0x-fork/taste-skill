@@ -869,7 +869,7 @@ td.num, th.num { text-align: right; }
 ## 12. The phone
 
 The study has no phone screens. This section is house rule, built from the skill's phone rules
-(`layout.md` §8) and from what the desktop screens imply. The inspector fails a sidebar that still
+(`layout.md` §9) and from what the desktop screens imply. The inspector fails a sidebar that still
 takes more than 30% of a phone's width.
 
 - **Navigation folds.** The sidebar becomes a 48px top bar with the screen's name, a menu button that

@@ -246,7 +246,7 @@ not finished. Order of work:
    the width the page has set up: when its text sits in the left half, the right half holds its
    picture, its second column, its list or its figure, never nothing. Asymmetry lives inside the grid,
    never in the frame: a void is placed only when something closes it on the far side. No stretch of
-   the page taller than about half a screen holds nothing at all; sections are 120–220px apart on
+   the page taller than about half a screen holds nothing at all; sections are 120–240px apart on
    desktop. Every section the visitor came for opens with a heading that names it, and the first
    screen carries the page's title in an `h1`. These are what readers name first when a page looks
    wrong ("no clear title", "random empty space", "everything is pushed to one side"), and the
@@ -381,7 +381,7 @@ Short form. Numbers are from the study unless marked as house style.
   blocks share two or three left edges on the whole page.
 - Asymmetry inside the grid, never in the frame: the two outer margins are equal, and an off-centre
   heading is answered by something at the far side of the grid.
-- The gap between sections is clearly larger than any gap inside one: 120–220px on desktop.
+- The gap between sections is clearly larger than any gap inside one: 120–240px on desktop (the study's median is about 240).
 - Each section has a different composition from its neighbours; none is a card grid.
 
 **Colour**

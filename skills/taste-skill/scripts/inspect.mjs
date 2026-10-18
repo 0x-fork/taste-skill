@@ -80,6 +80,22 @@ const MOTION_RECORDER = `(() => {
   window.__motion = () => { window.__motionSample(); const v = [...document.querySelectorAll('video')]; return { ...c, videos: v.length, playingVideos: v.filter((x) => x.autoplay || !x.paused).length }; };
 })();`;
 
+// Is the page's title on screen and readable: in the viewport, not faded, not masked away?
+const TITLE_SEEN = `(() => {
+  const h = document.querySelector('h1'); if (!h) return { found: false };
+  const r = h.getBoundingClientRect();
+  if (r.width < 2 || r.height < 2) return { found: true, visible: false, why: 'it has no size yet' };
+  if (r.bottom < 0 || r.top > innerHeight) return { found: false }; // a title below the first screen is the no-title check's business
+  let o = 1; for (let p = h; p && p !== document.documentElement; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.visibility === 'hidden' || cs.display === 'none') return { found: true, visible: false, why: 'it is hidden' }; o *= +cs.opacity; }
+  if (o < 0.5) return { found: true, visible: false, why: 'it is at ' + Math.round(o * 100) + '% opacity' };
+  // text moved out of its own masked line, or a cover lying over it, shows up as nothing at its centre
+  const range = document.createRange(); range.selectNodeContents(h); const rr = range.getBoundingClientRect();
+  const x = Math.min(innerWidth - 1, Math.max(0, rr.left + rr.width / 2)), y = Math.min(innerHeight - 1, Math.max(0, rr.top + Math.min(rr.height, 80) / 2));
+  const hit = document.elementFromPoint(x, y);
+  if (hit && !h.contains(hit) && !hit.contains(h)) { const cs = getComputedStyle(hit); if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || /^(IMG|VIDEO|CANVAS)$/.test(hit.tagName)) return { found: true, visible: false, why: 'something lies over it' }; }
+  return { found: true, visible: true };
+})()`;
+
 async function sheet(frames, cols, cellW, cellH, path) {
   const rows = Math.ceil(frames.length / cols);
   await helper.setViewport({ width: cols * cellW, height: rows * cellH, dsf: 1 });
@@ -98,8 +114,10 @@ try {
     const page = await browser.newPage({ width: w, height: h, dsf: 1, mobile: w < 600 });
     await page.send('Page.addScriptToEvaluateOnNewDocument', { source: MOTION_RECORDER }).catch(() => {});
     const how = await page.goto(url, { timeoutMs: 30000, settleMs: 600 });
+    await sleep(600); // about 1.2s after the load event: is the title there to read yet?
+    const early = await page.eval(TITLE_SEEN).catch(() => null);
     await page.eval('document.fonts.ready.then(() => true)').catch(() => {});
-    await sleep(1400); // let the load choreography finish before judging the first screen
+    await sleep(800); // let the load choreography finish before judging the first screen
     const fold = join(outDir, `${label}-fold.jpg`);
     await page.screenshot({ path: fold, quality: 82 });
     const metrics = await page.eval(probe);
@@ -137,6 +155,8 @@ try {
       sheets.push(p);
     }
     let findings = judge(m, { width: w, allow });
+    // a third of the studied award pages were still unreadable 4.5s after load; the house sequence is over by 1.2s
+    if (!appMode && early && early.found && !early.visible && !allow.includes('late-title')) findings.push({ level: 'FAIL', id: 'late-title', width: w, message: `The title is not readable 1.2s after the page loaded (${early.why}).`, fix: 'Put the headline in the HTML, painted on the first frame; the load sequence only adds arrival and is settled by 1.2s (references/motion.md, "Load sequence in 1.2 seconds"). No preloader, no gate, no waiting for the load event.' });
     if (lay) findings.push(...judgeLayout(lay, { width: w, allow }));
     if (appMode) {
       findings = findings.filter((f) => !APP_SKIP.has(f.id) && f.id !== 'no-title' && f.id !== 'small-title');
@@ -166,6 +186,25 @@ try {
     report.findings.push(...(appMode ? findings.filter((f) => !APP_SKIP.has(f.id)) : findings));
     report.images.push({ viewport: label, width: w, fold, pages: sheets });
     await page.close();
+  }
+  // Under prefers-reduced-motion the page is the finished page: nothing may stay hidden waiting for an
+  // animation that will not run. Two in three studied award pages had no reduced-motion rules at all.
+  if (!appMode && widths.some((x) => x >= 1100) && !allow.includes('reduced-hidden')) {
+    const rp = await browser.newPage({ width: 1440, height: 900, dsf: 1, reducedMotion: true });
+    try {
+      await rp.goto(url, { timeoutMs: 30000, settleMs: 1500 });
+      const hidden = await rp.eval(`(() => {
+        const out = []; const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); const rg = document.createRange();
+        for (let n = w.nextNode(); n; n = w.nextNode()) {
+          const t = n.nodeValue.trim(); const el = n.parentElement; if (t.length < 3 || !el || el.closest('script, style, noscript, [aria-hidden="true"]')) continue;
+          rg.selectNodeContents(n); const r = rg.getBoundingClientRect(); if (r.width < 2 || r.top > innerHeight || r.bottom < 0) continue;
+          let o = 1, gone = false; for (let p = el; p && p !== document.documentElement; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.visibility === 'hidden') { gone = true; break; } o *= +cs.opacity; }
+          if (gone || o < 0.1) out.push(t.slice(0, 40));
+        }
+        return out;
+      })()`).catch(() => []);
+      if (hidden.length >= 2) report.findings.push({ level: 'FAIL', id: 'reduced-hidden', width: 1440, message: `With reduced motion requested, ${hidden.length} text block(s) on the first screen stay invisible: ` + hidden.slice(0, 4).map((t) => `"${t}"`).join(', '), fix: 'Put every hidden starting state inside @media (prefers-reduced-motion: no-preference); the reduced page is the finished page (references/motion.md §8).' });
+    } finally { await rp.close(); }
   }
 } finally {
   await browser.close();
