@@ -2,7 +2,7 @@
 // Drives an installed Chrome / Edge / Chromium in headless mode over Node's built-in WebSocket.
 // Requires Node 22+. No npm install.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,6 +37,18 @@ export function findChrome() {
   return null;
 }
 
+// Profiles from runs that were killed before close(): gone after six hours (no run lasts that long).
+function sweepProfiles(base) {
+  try {
+    const cutoff = Date.now() - 6 * 3600 * 1000;
+    for (const name of readdirSync(base)) {
+      if (!name.startsWith('ad-chrome-')) continue;
+      const p = join(base, name);
+      try { if (statSync(p).mtimeMs < cutoff) rmSync(p, { recursive: true, force: true }); } catch {}
+    }
+  } catch {}
+}
+
 export class Browser {
   static async launch({ width = 1440, height = 900, extraArgs = [] } = {}) {
     if (typeof WebSocket === 'undefined') {
@@ -46,9 +58,16 @@ export class Browser {
     if (!exe) {
       throw new Error('No Chrome/Edge/Chromium found. Install one or set CHROME_PATH to its executable.');
     }
-    const dir = mkdtempSync(join(tmpdir(), 'ad-chrome-'));
+    // A throwaway profile per run. Its cache is capped (each run starts cold anyway), profiles left by
+    // runs that were killed are swept once they are a few hours old, and the profile goes on exit.
+    const base = process.env.TASTE_SKILL_TMP || tmpdir();
+    sweepProfiles(base);
+    const dir = mkdtempSync(join(base, 'ad-chrome-'));
+    const drop = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
+    process.once('exit', drop);
     const args = [
       '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${dir}`,
+      '--disk-cache-size=16777216', '--media-cache-size=16777216',
       '--no-first-run', '--no-default-browser-check', '--mute-audio', '--hide-scrollbars',
       '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
       '--disable-backgrounding-occluded-windows', '--disable-features=Translate,MediaRouter',
