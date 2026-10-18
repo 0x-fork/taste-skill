@@ -134,4 +134,81 @@ export function judge(m, { width = m.viewport.w, allow = [] } = {}) {
   return out;
 }
 
-export const RULE_IDS = ['headline-lines', 'statement-length', 'focal-point', 'hero-words', 'mixed-font-headline', 'eyebrow', 'mono', 'numbering', 'micro-label', 'emoji', 'gradient', 'gradient-text', 'shadow', 'text-shadow', 'button-fx', 'hairline', 'outlined-box', 'dashed', 'glass', 'icon-cards', 'card-rows', 'pill-nav', 'palette-claude', 'palette-terracotta', 'palette-cream', 'palette-purple', 'default-link', 'contrast', 'font-count', 'font-fallback', 'size-count', 'body-size', 'measure', 'small-text', 'all-centred', 'ui-wrapper', 'overflow', 'broken-image', 'no-hero', 'first-action', 'grey-body', 'blend-text', 'covered-text', 'clipped-text', 'pinned-over-picture', 'empty-screens', 'long-pin', 'side-scroll', 'few-pictures', 'no-real-pictures', 'no-footage', 'still-page'];
+// The frame of the page, measured once per width by layout(): margins, balance, blank stretches, titles.
+// These catch the failures a reader names first: "no clear title", "random empty space", "it is all
+// pushed to one side", "text touching the edge".
+export function judgeLayout(L, { width = L.viewport.w, allow = [] } = {}) {
+  const out = [];
+  const add = (level, id, message, fix) => { if (!allow.includes(id)) out.push({ level, id, width, message, fix }); };
+  const mobile = width < 600, H = L.viewport.h;
+  // the outer frame: the two margins match (asymmetry belongs inside the grid, never in the frame)
+  const { left, right } = L.margins;
+  if (left != null && right != null) {
+    const diff = Math.abs(left - right), wide = Math.max(left, right);
+    if (diff >= Math.max(mobile ? 14 : 40, width * 0.045) && wide >= (mobile ? 28 : width * 0.07)) {
+      add('FAIL', 'off-centre', `The page sits off-centre: its content comes to ${left}px from the left edge but only to ${right}px from the right, at ${width}px.`, `Give the page one pair of equal margins. Check the wrapper for a max-width without margin-inline: auto, a grid with an empty last column, or padding on one side only. If one side is meant to hold air, it must still be closed by something that reaches the margin (a picture, the navigation's last item, a figure).`);
+    }
+  }
+  // sections whose content huddles on one side, leaving the other half of the screen empty
+  if (!mobile && left != null) {
+    const lop = L.sections.filter((s) => !s.hero && !s.footer && !s.fullBleed && !s.pinned && s.left != null && s.words >= 12 && s.height >= 180 && Math.min(s.left, s.right) <= Math.max(left, right) + 24 && Math.max(s.left, s.right) >= width * 0.42);
+    if (lop.length >= 2) add('FAIL', 'lopsided', `${lop.length} sections keep all their content on one side and leave ${Math.round(Math.max(...lop.map((s) => Math.max(s.left, s.right))) / width * 100)}% of the width empty: ` + lop.slice(0, 4).map((s) => `${s.heading ? '"' + s.heading.text + '"' : s.sel} (${s.right > s.left ? 'right' : 'left'} ${Math.max(s.left, s.right)}px empty)`).join('; '), 'Use the whole width the page has set up: put the section\'s picture, its second column, its list or its figure in the empty half, or set the text larger across the grid. Empty space must be placed, with something on each side of it.');
+    else if (lop.length) add('WARN', 'lopsided', `A section keeps its content on one side and leaves ${Math.max(lop[0].left, lop[0].right)}px of the width empty: ${lop[0].heading ? '"' + lop[0].heading.text + '"' : lop[0].sel}.`, 'Fill the other side with what the section has (its picture, a second column, the figure), or defend the void in one sentence.');
+  }
+  // blank stretches: nothing at all for a long run down the page
+  const big = L.gaps.filter((g) => g.height >= H * 0.6), mid = L.gaps.filter((g) => g.height >= H * 0.42 && g.height < H * 0.6);
+  if (big.length || mid.length >= 2) add('FAIL', 'blank-gap', `${big.length + mid.length} stretch(es) of the page hold nothing at all: ` + [...big, ...mid].slice(0, 4).map((g) => `${g.height}px at ${g.top}px`).join('; ') + ` (the screen is ${H}px tall).`, 'Close the gap: a section gap is 120–220px on desktop and 72–112px on a phone. Look for a min-height: 100vh on a short section, an empty grid row, a hidden element still holding its space, or a reveal that never fired. A deliberate rest is a placed picture or colour field, not nothing.');
+  else if (mid.length) add('WARN', 'blank-gap', `A ${mid[0].height}px stretch at ${mid[0].top}px holds nothing.`, 'Check that it is a deliberate rest (once per page at most); otherwise close it to the normal section gap.');
+  // the title: one h1, on the first screen, that says what this is
+  if (!L.h1s.length) add('FAIL', 'no-title', 'The page has no visible h1.', 'Give the first screen a clear title in an h1 that says what this is (a name with what it does, the product with what it is for, the event with its date and place).');
+  else {
+    const first = L.h1s[0];
+    if (!first.firstScreen) add('FAIL', 'no-title', `The h1 ("${first.text.slice(0, 50)}") is not on the first screen (it starts ${first.top}px down).`, 'The title belongs on the first screen, where a visitor decides whether to stay.');
+    else if (first.size < (mobile ? 26 : 32)) add('WARN', 'small-title', `The h1 is ${first.size}px ("${first.text.slice(0, 50)}").`, 'Set the title at display size, or make the large text of the first screen the h1.');
+    if (L.h1s.length > 1) add('WARN', 'many-h1', `${L.h1s.length} h1 elements.`, 'One h1 per page; section titles are h2.');
+  }
+  // sections with running text but no heading: the reader cannot tell what they are
+  const untitled = L.sections.filter((s) => !s.hero && !s.footer && !s.continues && !s.heading && s.words >= 30 && s.height >= 200);
+  if (untitled.length >= 2) add('FAIL', 'untitled-section', `${untitled.length} sections carry text but no heading: ` + untitled.slice(0, 4).map((s) => `${s.sel} at ${s.top}px (${s.words} words)`).join('; '), 'Give each section a short heading that names what it holds (the menu, the rooms, how it works, the price), in the heading face at the section size.');
+  else if (untitled.length) add('WARN', 'untitled-section', `A section carries text but no heading: ${untitled[0].sel} at ${untitled[0].top}px.`, 'Name it with a short heading unless it is the continuation of the section above.');
+  // text pressed against the screen edge
+  if (L.edgeText.length) add('FAIL', 'edge-text', `${L.edgeText.length} text block(s) sit within ${mobile ? 12 : 16}px of the screen edge: ` + L.edgeText.slice(0, 4).map((t) => `"${t.text.slice(0, 30)}" (${t.px}px from the ${t.side})`).join('; '), `Keep text inside the page margin (${mobile ? '16–20px' : '16–32px or more'}). Only display type deliberately bled past the edge may touch it.`);
+  // too many left edges: nothing lines up
+  if (!mobile && L.edges.length > 6 && L.leftBlocks >= 8) {
+    const top3 = L.edges.slice(0, 3).reduce((a, e) => a + e.n, 0) / L.leftBlocks;
+    if (top3 < 0.6) add('WARN', 'ragged-edges', `Left-aligned text starts at ${L.edges.length} different lines (${L.edges.slice(0, 7).map((e) => e.x + 'px').join(', ')}); the three most used hold only ${Math.round(top3 * 100)}% of it.`, 'Pick two or three anchor lines from the grid and start every heading and paragraph on one of them.');
+  }
+  return out;
+}
+
+// App screens (dashboards, admin, settings, inboxes) keep conventions a marketing page does not: tables
+// and panels may have quiet borders, labels are small, cards repeat, there is no hero, no picture floor
+// and no motion floor. These page rules do not apply to them; references/app-screens.md has the reasons.
+export const APP_SKIP = new Set(['hero-words', 'eyebrow', 'numbering', 'hairline', 'outlined-box', 'dashed', 'icon-cards', 'card-rows', 'pill-nav', 'grey-body', 'measure', 'first-action', 'few-pictures', 'no-real-pictures', 'no-footage', 'focal-point', 'no-hero', 'body-size', 'small-text', 'statement-length', 'shadow', 'glass', 'still-page', 'empty-screens', 'long-pin', 'side-scroll', 'pinned-over-picture', 'off-centre', 'lopsided', 'ragged-edges', 'untitled-section', 'size-count', 'all-centred']);
+
+export function judgeApp(A, m, { width = A.viewport.w, allow = [] } = {}) {
+  const out = [];
+  const add = (level, id, message, fix) => { if (!allow.includes(id)) out.push({ level, id, width, message, fix }); };
+  const mobile = width < 600;
+  if (mobile && A.sidebar && A.sidebar.share > 0.3) add('FAIL', 'sidebar-phone', `The sidebar still takes ${Math.round(A.sidebar.share * 100)}% of the width on a ${width}px phone.`, 'On a phone the navigation folds into a top bar with a menu button or a bottom bar of four or five destinations; the screen\'s content gets the full width.');
+  if (!mobile && width >= 1100 && A.canvas && A.canvas.right > Math.max(120, width * 0.1) && A.canvas.right > A.canvas.left + 80) add('WARN', 'unused-canvas', `The content stops ${A.canvas.right}px short of the right edge while it starts ${A.canvas.left}px from the sidebar.`, 'Let the grid fill the canvas (columns in fr units), or centre a capped canvas with equal margins. A dead strip on one side reads as unfinished.');
+  if (A.panels.heavyShadows) add('FAIL', 'heavy-shadow', `${A.panels.heavyShadows} panel shadow(s) heavy enough to read as floating: ${A.panels.shadowSamples.join(' | ')}`, 'Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.');
+  if (A.panels.glass) add('FAIL', 'glass', `${A.panels.glass} blurred glass panel(s).`, 'Opaque surfaces only.');
+  if (A.panels.heavyBorders >= 3) add('WARN', 'heavy-borders', `${A.panels.heavyBorders} panel borders are dark against their ground: ${A.panels.borderSamples.join(' | ')}`, 'A panel border is a whisper: about 1.1–1.3:1 against its ground on a light screen (#e5e7eb–#ededed on white), and about 1.2–1.5:1 on a dark one (#1a1a1a on #000, #2e2e2e on #111). Darker lines turn the screen into a grid of boxes; keep the stronger line for controls.');
+  const radii = A.panels.radii.filter(([, n]) => n >= 2).map(([r]) => r);
+  if (radii.length > 3) add('WARN', 'radius-mix', `Panels use ${radii.length} corner radii (${radii.join(', ')}px).`, 'One radius for panels, one for controls, full round only for pills and avatars.');
+  if (A.chips.count >= 3) add(A.chips.hues >= 2 ? 'FAIL' : 'WARN', 'icon-chips', `${A.chips.count} icons sit in tinted squares or circles${A.chips.hues >= 2 ? ` in ${A.chips.hues} different colours` : ''}.`, 'This is the commonest tell of a generated dashboard. Drop the tinted square: a KPI is a label and a number; an icon, if it helps, is plain and in the text colour.');
+  if (A.numbers.cells >= 6 && A.numbers.leftAligned / A.numbers.cells >= 0.5) add('WARN', 'numeric-align', `${A.numbers.leftAligned} of ${A.numbers.cells} numeric table cells are left-aligned.`, 'Right-align numbers, amounts and percentages (and their column headers) so the digits line up.');
+  if (A.numbers.figures >= 6 && A.numbers.tabularShare != null && A.numbers.tabularShare < 0.5) add('WARN', 'tabular', `Only ${Math.round(A.numbers.tabularShare * 100)}% of the figures use tabular numerals.`, 'Set font-variant-numeric: tabular-nums on tables, KPIs and anything that updates, so digits keep their width.');
+  if (A.chartHues > 6) add('FAIL', 'rainbow-chart', `The charts use ${A.chartHues} different hues.`, 'One hue for the series that matters, a neutral for the rest, and at most four series colours in total; status colours only for status.');
+  else if (A.chartHues > 4) add('WARN', 'rainbow-chart', `The charts use ${A.chartHues} different hues.`, 'Four series colours at most; prefer one accent and neutrals.');
+  if (A.colourShare != null && A.colourShare > 0.12) add('WARN', 'colour-sprawl', `${Math.round(A.colourShare * 100)}% of the first screen is strongly coloured.`, 'Keep the screen neutral and spend colour on data and status: the studied screens sit near 3%, and only tinted styles reach 10–15%, as pale tints rather than saturated fills.');
+  if (A.placeholders.length) add('FAIL', 'placeholder-data', `Placeholder data on screen: ${A.placeholders.join(', ')}.`, 'Use believable data for this product: real-looking names, amounts that add up, dates in order, units on every figure.');
+  if (A.type.tiny > 2) add('FAIL', 'tiny-text', `${A.type.tiny} text blocks under 11px: ${A.type.tinySamples.join(', ')}.`, 'Nothing below 11px; secondary text 12px, data 13–14px.');
+  else if (A.type.under13 > 0.45) add('WARN', 'tiny-text', `${Math.round(A.type.under13 * 100)}% of the text is under 13px.`, 'Data and labels read at 13–14px; keep 11–12px for sublines and axis ticks.');
+  if (!A.title) add('FAIL', 'no-title', 'The screen has no h1.', 'Name the screen in an h1 at the top of the canvas (18–28px): "Overview", "Payouts", the project\'s name.');
+  if (m && m.type && m.type.monoProseShare > 0.15) add('WARN', 'mono', `Monospace is ${Math.round(m.type.monoProseShare * 100)}% of the text.`, 'Monospace for IDs, keys and code only; numbers use tabular figures in the text face.');
+  return out;
+}
+
+export const RULE_IDS = ['headline-lines', 'statement-length', 'focal-point', 'hero-words', 'mixed-font-headline', 'eyebrow', 'mono', 'numbering', 'micro-label', 'emoji', 'gradient', 'gradient-text', 'shadow', 'text-shadow', 'button-fx', 'hairline', 'outlined-box', 'dashed', 'glass', 'icon-cards', 'card-rows', 'pill-nav', 'palette-claude', 'palette-terracotta', 'palette-cream', 'palette-purple', 'default-link', 'contrast', 'font-count', 'font-fallback', 'size-count', 'body-size', 'measure', 'small-text', 'all-centred', 'ui-wrapper', 'overflow', 'broken-image', 'no-hero', 'first-action', 'grey-body', 'blend-text', 'covered-text', 'clipped-text', 'pinned-over-picture', 'empty-screens', 'long-pin', 'side-scroll', 'few-pictures', 'no-real-pictures', 'no-footage', 'still-page', 'off-centre', 'lopsided', 'blank-gap', 'no-title', 'small-title', 'many-h1', 'untitled-section', 'edge-text', 'ragged-edges', 'sidebar-phone', 'unused-canvas', 'heavy-shadow', 'heavy-borders', 'radius-mix', 'icon-chips', 'numeric-align', 'tabular', 'rainbow-chart', 'placeholder-data', 'tiny-text', 'colour-sprawl'];

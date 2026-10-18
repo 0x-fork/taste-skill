@@ -1,6 +1,6 @@
 ---
 name: design-taste-frontend
-description: tasteskill v2, the anti-slop frontend skill. Art direction for websites, distilled from a study of 247 curated gallery sites (One Page Love, Awwwards Sites of the Day). Deals researched directions (idea, composition, type, palette, photographs, section blueprints) from a library, enforces a strict no-slop house style with a real-browser inspector, and runs a look-and-fix loop on screenshots. Use this whenever you build, design, redesign, restyle, polish or review a landing page, marketing site, portfolio, product page, one-pager, hero or any public-facing web page, in any stack (HTML/CSS, React, Next.js, Vue, Svelte, Astro, Tailwind) — also when the user says a page looks generic, templated, "AI-made", sloppy, or asks to make it look designed, premium, award-level or less like every other site. Not for dashboards or app screens.
+description: tasteskill v2, the anti-slop frontend skill. Art direction for websites, distilled from a study of 247 curated gallery sites (One Page Love, Awwwards Sites of the Day). Deals researched directions (idea, composition, type, palette, photographs, section blueprints) from a library, enforces a strict no-slop house style with a real-browser inspector, and runs a look-and-fix loop on screenshots. Use this whenever you build, design, redesign, restyle, polish or review a landing page, marketing site, portfolio, product page, one-pager, hero or any public-facing web page, in any stack (HTML/CSS, React, Next.js, Vue, Svelte, Astro, Tailwind) — also when the user says a page looks generic, templated, "AI-made", sloppy, or asks to make it look designed, premium, award-level or less like every other site. Also for app screens: dashboards, admin and analytics views, settings, inboxes and other screens people work in, with their own run and rules.
 ---
 
 # tasteskill v2
@@ -30,6 +30,23 @@ section carrying its full content. The skill is built to give you that; do not t
 In the commands below `<skill>` is this skill's folder. Run them from the project's root, so the
 working files land in `.taste-skill/` there. The scripts need Node 22+ and an installed Chrome, Edge
 or Chromium, and install nothing. `assets.mjs` also needs network access; it uses no API keys.
+
+## Page or app screen
+
+Decide first which of two kinds of work this is.
+
+- **A page** is read and scrolled: a landing page, a marketing or product site, a portfolio, an
+  event, a restaurant, a one-pager. It follows **the run** below.
+- **An app screen** is worked in: a dashboard, an admin or analytics view, settings, billing, an inbox
+  or queue to work through, a wallet, a list with filters, an editor or builder. It follows
+  **`references/app-screens.md`**: its own run, its own draw (`draw.mjs --app`), its own house rules
+  (quiet borders, small labels and repeated panels are normal there; gradients, glows, icons in tinted
+  squares, rainbow charts and invented vanity numbers are not) and `inspect.mjs --app`. Read that file
+  whole before you start; the page run below does not apply.
+
+A product site that shows its app is a page; the interface fragments on it follow the app-screen
+rules for their insides. When a request mixes both (a landing page and the dashboard behind it),
+build each with its own run and one shared palette and typeface.
 
 ## The run
 
@@ -225,7 +242,16 @@ not finished. Order of work:
    carries. A screen that is mostly empty ground is an underbuilt section, not a rest; one deliberate
    rest per page is the limit, and the inspector fails a page with two or more near-empty screens.
    Running text is in the full ink at 16px or more; grey is for secondary notes.
-7. **States and semantics.** Real links and buttons, visible focus, alt text, a phone layout that is
+7. **The frame.** The page has one pair of equal outer margins at every width, and every section uses
+   the width the page has set up: when its text sits in the left half, the right half holds its
+   picture, its second column, its list or its figure, never nothing. Asymmetry lives inside the grid,
+   never in the frame: a void is placed only when something closes it on the far side. No stretch of
+   the page taller than about half a screen holds nothing at all; sections are 120–220px apart on
+   desktop. Every section the visitor came for opens with a heading that names it, and the first
+   screen carries the page's title in an `h1`. These are what readers name first when a page looks
+   wrong ("no clear title", "random empty space", "everything is pushed to one side"), and the
+   inspector measures each of them.
+8. **States and semantics.** Real links and buttons, visible focus, alt text, a phone layout that is
    its own composition.
 
 Read `references/type.md`, `references/colour.md` and `references/layout.md` when you need the detail
@@ -240,8 +266,9 @@ node <skill>/scripts/inspect.mjs <url or path/to/index.html>
 
 `lint.mjs` scans source for banned patterns and stock phrases. `inspect.mjs` opens the page in a real
 browser at 1440, 768 and 390 pixels, measures it (headline line counts, type sizes, fonts actually
-loaded, colours, rules, shadows, gradients, contrast, overflow) and saves screenshots to
-`.taste-skill/inspect/`. Fix every `FAIL`. Treat each `WARN` as wrong unless you can defend it to a
+loaded, colours, rules, shadows, gradients, contrast, overflow, and the frame: equal margins, sections
+huddled on one side, blank stretches, the title, untitled sections, text against the screen edge) and
+saves screenshots to `.taste-skill/inspect/`. Fix every `FAIL`. Treat each `WARN` as wrong unless you can defend it to a
 designer in one sentence. Re-run until there are no `FAIL`s. Do not argue with the meter and do not
 hide things from it. The inspector serves local files over a throwaway local server; if the page must
 also open straight from the file system, open `index.html` that way once before you finish.
@@ -278,6 +305,14 @@ every screenshot for content that failed to appear.
 
 ### 10. Report
 
+Do not report until all of these are true; each one was skipped in a test run that came out badly:
+
+- `inspect.mjs` shows **0 FAIL** at 1440, 768 and 390, on the final version of the page.
+- You opened every screenshot it listed after the last change, not only the first screen.
+- A stranger reading the first screen for five seconds can say what this is and what to do.
+- Every section has a heading; the margins match on both sides; no stretch of the page is empty.
+- The critique of your last round is written down in the shape of `references/critique.md` §4.
+
 Tell the user, briefly: the direction dealt (name and seed) and any redraws with reasons; the idea
 sentence and the live thing; the final scores from your last critique round and what still falls short;
 every found picture and clip with its title, creator, licence and source page (`assets.mjs --credits` prints
@@ -292,6 +327,9 @@ These hold on every build, whatever the direction. `inspect.mjs` measures them.
 | Rule | Instead |
 | --- | --- |
 | **Headlines: two lines or fewer, at every width.** Every `h1`–`h6`, and the main line of the first screen whatever its tag. | Cut words. Then widen the measure. Size last. |
+| **A clear title on the first screen**, in the page's one `h1`, and a heading on every section. | Say what this is: the name with what it does, the product with what it is for, the event with its date and place. |
+| **Equal outer margins; no section huddled on one side** with the other half of the screen empty. | Close every void with something on its far side: the section's picture, a second column, a list, a figure. |
+| **No blank stretches** taller than about half a screen. | The normal section gap. A deliberate rest is a placed picture or a field of colour, once per page. |
 | **Statements are paragraphs.** An intro sentence or a quotation set large is marked up as `<p>` or `<blockquote>`, stays at statement size (36px or less on desktop, 24px on a phone) and runs to about 25 words, three lines. | Larger than that it is a headline and the two-line rule applies. In blind tests jurors read a 42px sentence over four lines as a four-line headline. |
 | **No eyebrows.** No small label above a heading, no pill badge above the headline, no "New ·" chip. | Put the information in the heading or the first sentence, or drop it. |
 | **No monospace** outside real code blocks. | The text face. Tabular figures where numbers align. |
@@ -341,6 +379,8 @@ Short form. Numbers are from the study unless marked as house style.
 **Space**
 - One grid, one pair of tight margins (16–32px), used everywhere; large things run to the edges. Text
   blocks share two or three left edges on the whole page.
+- Asymmetry inside the grid, never in the frame: the two outer margins are equal, and an off-centre
+  heading is answered by something at the far side of the grid.
 - The gap between sections is clearly larger than any gap inside one: 120–220px on desktop.
 - Each section has a different composition from its neighbours; none is a card grid.
 
@@ -398,6 +438,7 @@ open collections could not be searched.
 
 | File | Read it when |
 | --- | --- |
+| `references/app-screens.md` | Any dashboard, admin, settings or other app screen: its own run, rules, tokens and checks. |
 | `references/copy.md` | Writing the argument and the copy deck (steps 2 and 5). The two-line arithmetic. |
 | `references/type.md` | Setting type: scales, tracking, measure, loading fonts, pairing. |
 | `references/colour.md` | Applying the palette: roles, proportions, tone steps, dark pages, contrast. |

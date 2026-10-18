@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // tasteskill / inspect — render the page in a real browser, measure it, and photograph it.
 //
-//   node inspect.mjs <url | path/to/file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--json]
+//   node inspect.mjs <url | path/to/file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--json]
+//
+// --app judges an app screen (dashboard, admin, settings) by the rules in references/app-screens.md; a
+// direction dealt with draw.mjs --app switches it on by itself.
 //
 // Exit code 0 = no FAIL findings. Exit code 1 = at least one FAIL (the page is not done).
 // Zero dependencies: drives an installed Chrome/Edge/Chromium. Node 22+.
@@ -9,8 +12,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, statSync, createRea
 import { resolve, join, relative, dirname, extname, sep } from 'node:path';
 import { createServer } from 'node:http';
 import { Browser, sleep } from './lib/cdp.mjs';
-import { probe, frame } from './lib/probe.mjs';
-import { judge } from './lib/rules.mjs';
+import { probe, frame, layout, app, colourShare } from './lib/probe.mjs';
+import { judge, judgeLayout, judgeApp, APP_SKIP } from './lib/rules.mjs';
 
 const args = process.argv.slice(2);
 const flag = (name, def) => { const i = args.indexOf('--' + name); if (i === -1) return def; const v = args[i + 1]; args.splice(i, 2); return v; };
@@ -19,14 +22,15 @@ const outDir = resolve(flag('out', '.taste-skill/inspect'));
 const widths = flag('widths', '1440,768,390').split(',').map(Number).filter(Boolean);
 let allow = flag('allow', '').split(',').filter(Boolean);
 const asJson = has('json');
+let appMode = has('app');
 const target = args[0];
 if (!target || target === '-h' || target.startsWith('--')) {
-  console.error('usage: node inspect.mjs <url | file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--json]');
+  console.error('usage: node inspect.mjs <url | file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--json]');
   process.exit(2);
 }
 // Allowances granted by the drawn direction (written by draw.mjs) apply automatically.
 for (const p of ['.taste-skill/direction.json', join(outDir, '..', 'direction.json')]) {
-  if (existsSync(p)) { try { allow = [...new Set([...allow, ...(JSON.parse(readFileSync(p, 'utf8')).allow || [])])]; } catch {} break; }
+  if (existsSync(p)) { try { const d = JSON.parse(readFileSync(p, 'utf8')); allow = [...new Set([...allow, ...(d.allow || [])])]; if (d.kind === 'app') appMode = true; } catch {} break; }
 }
 // A local file is served over http from a throwaway server on 127.0.0.1, so the browser never has to
 // open a file path (some sandboxes show Node and the browser different views of the disk) and relative
@@ -118,6 +122,9 @@ try {
     await sleep(350);
     const after = await page.eval(probe).catch(() => metrics);
     const m = after.headings.length >= metrics.headings.length ? after : metrics;
+    const lay = await page.eval(layout).catch(() => null);
+    const appM = appMode ? await page.eval(app).catch(() => null) : null;
+    if (appM) appM.colourShare = await helper.eval(colourShare, 'data:image/jpeg;base64,' + frames[0]).catch(() => null);
 
     const cols = w >= 1100 ? 2 : w >= 600 ? 3 : 4;
     const cellW = w >= 1100 ? 800 : w >= 600 ? 512 : 390;
@@ -129,7 +136,12 @@ try {
       await sheet(frames.slice(i, i + perSheet), cols, cellW, cellH, p);
       sheets.push(p);
     }
-    const findings = judge(m, { width: w, allow });
+    let findings = judge(m, { width: w, allow });
+    if (lay) findings.push(...judgeLayout(lay, { width: w, allow }));
+    if (appMode) {
+      findings = findings.filter((f) => !APP_SKIP.has(f.id) && f.id !== 'no-title' && f.id !== 'small-title');
+      if (appM) findings.push(...judgeApp(appM, m, { width: w, allow }));
+    }
     // what only shows up while scrolling: text hidden under something, and screens with almost nothing on them
     const coveredText = [...new Map(frameChecks.filter(Boolean).flatMap((f, i) => f.covered.map((c) => [c.text, { ...c, screen: i + 1 }]))).values()];
     if (coveredText.length && !allow.includes('covered-text')) findings.push({ level: 'FAIL', id: 'covered-text', width: w, message: `Large text lies under another element at some scroll position: ` + coveredText.slice(0, 4).map((c) => `"${c.text}" (screen ${c.screen}, ${Math.round(c.share * 100)}% hidden)`).join('; '), fix: 'Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground.' });
@@ -150,8 +162,8 @@ try {
       else if (moving < MOTION_GOOD) findings.push({ level: 'WARN', id: 'still-page', width: w, message: `Little motion: ${motion.elements} element(s) moved while the page loaded and scrolled.`, fix: 'Give every section an entrance for its parts (not one fade of the whole block) and add one moving picture: a looping clip or a slow move on a photograph.' });
     }
     if (w >= 1100 && empty.length >= 2 && !allow.includes('empty-screens')) findings.push({ level: 'FAIL', id: 'empty-screens', width: w, message: `${empty.length} of ${frameChecks.length} desktop screens are almost empty ground (under 20% of the screen holds text, a picture or a colour field): screens ${empty.map(({ i }) => i + 1).join(', ')}.`, fix: 'An empty screen is a rest only once per page. Elsewhere it means the section is underbuilt: set its content larger, give it the full information, put it on a colour field, or cut it.' });
-    report.viewports.push({ width: w, height: h, load: how, screens: frames.length, filled: frameChecks.map((f) => f?.filled ?? null), motion, metrics: m, consoleErrors: page.consoleErrors.slice(0, 5) });
-    report.findings.push(...findings);
+    report.viewports.push({ width: w, height: h, load: how, screens: frames.length, filled: frameChecks.map((f) => f?.filled ?? null), motion, metrics: m, layout: lay, app: appM, consoleErrors: page.consoleErrors.slice(0, 5) });
+    report.findings.push(...(appMode ? findings.filter((f) => !APP_SKIP.has(f.id)) : findings));
     report.images.push({ viewport: label, width: w, fold, pages: sheets });
     await page.close();
   }

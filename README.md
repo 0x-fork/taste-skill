@@ -141,13 +141,15 @@ The default skill is built from a study of 247 curated sites. A build runs in si
 
 A build takes roughly 30 to 45 minutes and a few hundred thousand tokens. Details are in the [changelog](CHANGELOG.md) and the [study](skills/taste-skill/references/research.md).
 
+Dashboards and app screens (v2.1) take their own route: the skill deals one of the app styles distilled from real product screens, builds the shell, the data, the charts and the tables to those numbers, and checks the result with app rules: quiet panels, aligned figures, colour spent on data, a phone layout where the navigation folds away.
+
 ## Skills
 
 Each skill does one job. You do not need all of them. The **install name** is the value you pass to `--skill`.
 
 | Skill | Install name | What it does |
 | --- | --- | --- |
-| **[taste-skill](skills/taste-skill/SKILL.md)** | `design-taste-frontend` | v2. Art direction for landing pages, marketing sites, portfolios and product pages, in any stack. Works as described above. |
+| **[taste-skill](skills/taste-skill/SKILL.md)** | `design-taste-frontend` | v2. Art direction for landing pages, marketing sites, portfolios and product pages, and since v2.1 for dashboards and app screens, in any stack. Works as described above. |
 
 <details>
 <summary>Skills for a specific job (8)</summary>
@@ -180,7 +182,7 @@ These produce design images only, no code. Use them with ChatGPT Images, Codex i
 
 ### Which one should I use?
 
-- Building a new public page: **taste-skill**.
+- Building a new public page, a dashboard or an app screen: **taste-skill**.
 - Improving a page that already exists: **redesign-skill**.
 - The visual direction is already decided: **soft-skill**, **minimalist-skill** or **brutalist-skill**.
 - You want images first, then code: an image-generation skill, or **image-to-code-skill** for the whole pipeline in one go.
@@ -217,7 +219,7 @@ From open collections such as Wikimedia Commons, Openverse and the Met. Only pub
 Yes. The rules are about design, not a framework.
 
 **Is it for dashboards and app screens?**  
-No. The default skill is for public-facing pages. Use **minimalist-skill** or **soft-skill** for product UI.
+Yes, since v2.1. The skill tells a page from an app screen and builds a dashboard, an admin view or a settings screen with its own run: a style dealt from a study of real product screens, quiet panels, honest data and charts, and its own checks (`inspect.mjs --app`).
 
 ## Support the project
 

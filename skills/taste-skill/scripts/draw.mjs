@@ -16,6 +16,7 @@
 //   node draw.mjs --redraw hero|type|palette|photos|section:<role>|direction   re-deal one slot
 //   node draw.mjs --list sectors|directions|roles|tones
 //   node draw.mjs --site <id>                  print one studied reference site in full
+//   node draw.mjs --app --kind <kind> ...      deal a style for an app screen instead (see lib/app-draw.mjs)
 //
 // Zero dependencies. Node 18+.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -64,6 +65,10 @@ const DEFAULT_SECTIONS = {
 };
 // requested role names → the role vocabulary used by library/sections.json
 const ROLE_ALIAS = { features: 'features', feature: 'features', benefits: 'features', services: 'features', showcase: 'showcase', product: 'showcase', demo: 'showcase', 'how-it-works': 'how-it-works', how: 'how-it-works', process: 'how-it-works', steps: 'how-it-works', testimonial: 'testimonial', testimonials: 'testimonial', quotes: 'testimonial', proof: 'proof', logos: 'proof', press: 'proof', stats: 'stats', numbers: 'stats', pricing: 'pricing', plans: 'pricing', faq: 'faq', cta: 'cta', footer: 'footer', intro: 'intro', manifesto: 'intro', about: 'about', team: 'about', work: 'work', projects: 'work', index: 'work', 'case-studies': 'work', gallery: 'gallery', images: 'gallery', list: 'list', menu: 'list', schedule: 'list', lineup: 'list', 'line-up': 'list', speakers: 'list', agenda: 'list', programme: 'list', program: 'list', timetable: 'list', rooms: 'list', tickets: 'pricing', price: 'pricing', contact: 'contact', booking: 'contact', newsletter: 'contact', signup: 'contact' };
+
+// App screens (dashboards, admin, settings) have their own library and sheet: scripts/lib/app-draw.mjs.
+const savedKind = (() => { try { return JSON.parse(readFileSync(sheetPath, 'utf8')).kind; } catch { return null; } })();
+if (opt('app') || ((opt('show') || opt('redraw')) && savedKind === 'app')) await import('./lib/app-draw.mjs');
 
 if (opt('list')) {
   const what = opt('list');
