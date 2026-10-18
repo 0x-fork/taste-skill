@@ -119,7 +119,7 @@ The command prints a **direction sheet**. It is the art direction for this build
 
 - **Adopt it.** Do not blend it with the layout you would have made anyway. If it feels unfamiliar,
   good: the familiar layout is the one this skill exists to prevent.
-- Redraw one slot (`--redraw hero | type | palette | photos | section:<role> | direction`) only for a
+- Redraw one slot (`--redraw hero | type | palette | photos | scenes | section:<role> | direction`) only for a
   reason you can state: it contradicts a stated brand constraint, or needs an asset that does not
   exist. Never redraw to get something more comfortable. Record every redraw in your report.
 - When a dealt section cannot hold the real content (it compares three plans and there is one price;
@@ -169,6 +169,12 @@ foundry's letters; set the loan and read the real monthly figure; see whether th
 right now and how long until the last ferry; choose a size and see it against the room. In blind tests every winning page had one and the jurors named it first. Rules: it uses the subject's real content, it works on a phone with a thumb, it has a plain
 fallback without script, it never blocks reading, and it is one thing, not a playground. It is
 built in step 6 as part of the page, not added as motion in step 9.
+
+**The scenes carry the idea too.** The scroll scenes on the sheet are devices waiting for a subject.
+Decide what each one shows from your inventory before building: the fly-through passes through this
+studio's own title cards, the route is the road this shipment really takes, the picture that opens to
+the whole screen is the room the guest will wake up in. A scene filled with pictures that could belong
+to anyone is a screensaver.
 
 ### 5. Write the words
 
@@ -247,11 +253,19 @@ not finished. Order of work:
    `references/imagery.md` covers searching, licences and credits, video, drawing, crops and treatments.
 5. **The live thing** from step 4, built into the section where it proves the claim (often the hero
    or the booking), with real content, a thumb-sized phone version and a plain fallback.
-6. **Fullness.** Look at each desktop screen as a poster: one dominant thing and the content it
+6. **The scroll scenes** on the sheet (section 9), each with the section it carries: the page's big
+   moments, the camera that flies through the work, the picture that opens to the whole screen, the
+   word that buckles under the scroll. Copy the shared stage and the scene's files from
+   `<skill>/assets/scenes/`, fill the scene with this project's own pictures and words, and set the
+   page's tokens so it takes the page's look. A scene is composition: it decides how long the page is
+   and what each screen shows, so it is built now and seen in every look round, not added at the end.
+   `references/scenes.md` says how to put one on a page, fill it, fit it and check it;
+   `assets/scenes/demo/<id>.html` is a working example of each.
+7. **Fullness.** Look at each desktop screen as a poster: one dominant thing and the content it
    carries. A screen that is mostly empty ground is an underbuilt section, not a rest; one deliberate
    rest per page is the limit, and the inspector fails a page with two or more near-empty screens.
    Running text is in the full ink at 16px or more; grey is for secondary notes.
-7. **The frame.** The page has one pair of equal outer margins at every width, and every section uses
+8. **The frame.** The page has one pair of equal outer margins at every width, and every section uses
    the width the page has set up: when its text sits in the left half, the right half holds its
    picture, its second column, its list or its figure, never nothing. Asymmetry lives inside the grid,
    never in the frame: a void is placed only when something closes it on the far side. No stretch of
@@ -260,7 +274,7 @@ not finished. Order of work:
    screen carries the page's title in an `h1`. These are what readers name first when a page looks
    wrong ("no clear title", "random empty space", "everything is pushed to one side"), and the
    inspector measures each of them.
-8. **States and semantics.** Real links and buttons, visible focus, alt text, a phone layout that is
+9. **States and semantics.** Real links and buttons, visible focus, alt text, a phone layout that is
    its own composition.
 
 Read `references/type.md`, `references/colour.md` and `references/layout.md` when you need the detail
@@ -271,7 +285,12 @@ behind a decision; the laws below are the short form.
 ```bash
 node <skill>/scripts/lint.mjs <source files or folder>
 node <skill>/scripts/inspect.mjs <url or path/to/index.html>
+node <skill>/scripts/scenes.mjs <url or path/to/index.html>     # when the page has scroll scenes
 ```
+
+`scenes.mjs` photographs every scroll scene at 0, 10 … 100% of its hold, on desktop and on a phone,
+and the reduced-motion page; with scenes on the sheet, `inspect.mjs` also films the whole scroll
+(`desktop-film-NN.jpg`). A scene that never started or rests on desktop is a `FAIL`.
 
 `lint.mjs` scans source for banned patterns and stock phrases. `inspect.mjs` opens the page in a real
 browser at 1440, 768 and 390 pixels, measures it (headline line counts, type sizes, fonts actually
@@ -296,9 +315,9 @@ Judge only the pictures. If a problem is visible in a screenshot, it is real, wh
 
 Now build the motion layer. It is required, and it is more than one fade: the inspector counts the
 elements that really move while the page loads and is scrolled, and fails a page under eight (it warns
-under sixteen). The layer has four parts:
+under sixteen). The scroll scenes are already built (step 6); around them the layer has four parts:
 
-1. **The signature move** named on the sheet: one, done well.
+1. **The signature move** named on the sheet: one, done well (a dealt scene can be it).
 2. **An entrance for the parts of every section:** the heading, then the text, then the picture,
    staggered by 60–90ms, rising 16–32px with opacity, triggered once as the section enters. Not one
    fade for the whole block, and never content that stays hidden if the script fails.
@@ -318,6 +337,8 @@ Do not report until all of these are true; each one was skipped in a test run th
 
 - `inspect.mjs` shows **0 FAIL** at 1440, 768 and 390, on the final version of the page.
 - You opened every screenshot it listed after the last change, not only the first screen.
+- With scroll scenes: `scenes.mjs` ran on the final page with no problems, and you read every sheet
+  (desktop, phone, reduced motion).
 - A stranger reading the first screen for five seconds can say what this is and what to do.
 - Every section has a heading; the margins match on both sides; no stretch of the page is empty.
 - The critique of your last round is written down in the shape of `references/critique.md` §4.
@@ -454,12 +475,15 @@ open collections could not be searched.
 | `references/layout.md` | Grid, margins, rhythm, section variety, navigation, footer, the phone composition. |
 | `references/imagery.md` | Choosing, finding, crediting, cropping and treating pictures; what to do with none. |
 | `references/motion.md` | Step 9. Budget, tokens, recipes, reduced motion. |
+| `references/scenes.md` | Step 6, when the sheet deals scroll scenes: putting one on a page, filling, fitting, the phone, checking, the catalogue. |
 | `references/critique.md` | Step 8. How to look, how to score, what to fix first. |
 | `references/tells.md` | The dated registry of generated-page tells and what each is replaced by. |
 | `references/research.md` | The study: method, numbers, what the best and worst sites do. Cite it, do not guess. |
 | `scripts/draw.mjs` | Deals and reprints the direction; `--photos`, `--site <id>` for more references; `--app` deals an app style instead. |
 | `scripts/assets.mjs` | Step 6: searches open collections for real pictures of the subject's world; `--get` downloads with the credit, `--credits` prints them. |
 | `scripts/lint.mjs` · `scripts/inspect.mjs` | The gate. |
+| `scripts/scenes.mjs` | The gate for scroll scenes: each scene at 0-100% of its hold, desktop, phone, reduced motion. |
 | `assets/base.css` · `assets/base.js` | An optional neutral foundation to build on. |
+| `assets/scenes/` | The scroll scenes: the shared stage (`stage.js`, `stage.css`), one `.js` and `.css` per scene, and a working demo page of each in `demo/`. |
 | `assets/app.css` · `assets/charts.js` | For app screens: a neutral shell, panels, tables and controls, and small SVG charts drawn to the app rules. |
-| `library/` | The data the draw reads: directions, heroes, sections, type systems, palettes, photographs, studied sites, motions, and the app styles, shells and screen patterns (`app.json`). Do not read it whole; use the script. |
+| `library/` | The data the draw reads: directions, heroes, sections, type systems, palettes, photographs, studied sites, motions, scroll scenes (`scenes.json`), and the app styles, shells and screen patterns (`app.json`). Do not read it whole; use the script. |

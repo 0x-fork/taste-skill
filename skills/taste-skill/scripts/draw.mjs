@@ -13,8 +13,8 @@
 //                 [--options 3]                show three dealt directions to choose from, write nothing
 //                 [--direction <id>]           deal the full sheet for the chosen direction
 //   node draw.mjs --show                       reprint the saved direction sheet
-//   node draw.mjs --redraw hero|type|palette|photos|section:<role>|direction   re-deal one slot
-//   node draw.mjs --list sectors|directions|roles|tones
+//   node draw.mjs --redraw hero|type|palette|photos|scenes|section:<role>|direction   re-deal one slot
+//   node draw.mjs --list sectors|directions|roles|tones|scenes
 //   node draw.mjs --site <id>                  print one studied reference site in full
 //   node draw.mjs --app --kind <kind> ...      deal a style for an app screen instead (see lib/app-draw.mjs)
 //
@@ -75,6 +75,7 @@ if (opt('list')) {
   if (what === 'sectors') console.log(SECTORS.join('\n'));
   else if (what === 'tones') console.log(TONES.join('\n'));
   else if (what === 'roles') console.log([...new Set(Object.values(ROLE_ALIAS))].join('\n'));
+  else if (what === 'scenes') { const all = existsSync(join(LIB, 'scenes.json')) ? load('scenes') : []; for (const sc of all) console.log(`${sc.id.padEnd(34)} ${sc.name} — ${sc.family}; ${sc.summary.split(/(?<=\.)\s/)[0]}`); if (!all.length) console.log('No scene library yet.'); }
   else for (const d of load('directions')) console.log(`${d.id.padEnd(30)} ${d.name} — ${d.sectors.join(', ')}`);
   process.exit(0);
 }
@@ -118,7 +119,7 @@ if (opt('show')) {
   console.log(render(saved)); process.exit(0);
 }
 
-const L = { directions: load('directions'), heroes: load('heroes'), sections: load('sections'), type: load('type'), palettes: load('palettes'), photos: load('photos'), sites: load('sites'), motions: load('motions') };
+const L = { directions: load('directions'), heroes: load('heroes'), sections: load('sections'), type: load('type'), palettes: load('palettes'), photos: load('photos'), sites: load('sites'), motions: load('motions'), scenes: existsSync(join(LIB, 'scenes.json')) ? load('scenes') : [] };
 const hist = readHist();
 const recent = (key, n) => hist.slice(0, n).map((h) => h[key]).filter(Boolean);
 
@@ -154,6 +155,7 @@ if (opt('redraw')) {
   else if (what === 'type') sheet.type = dealType(dir, [sheet.type?.id]);
   else if (what === 'palette') sheet.palette = dealPalette(dir, sheet.input, [sheet.palette?.id]);
   else if (what === 'photos') sheet.photos = dealPhotos(dir, sheet.input);
+  else if (what === 'scenes') sheet.scenes = dealScenes(dir, sheet.input, (sheet.scenes || []).map((x) => x.id));
   else if (what.startsWith('section:')) {
     // section:<role> re-deals at random; section:<role>=<id> takes a named alternative (see --alternatives)
     const [roleRaw, wanted] = what.slice(8).split('=');
@@ -167,7 +169,7 @@ if (opt('redraw')) {
       if (!chosen) { console.error(`No blueprint with id ${wanted}. List them with --alternatives <role>.`); process.exit(2); }
       sheet.sections[i] = chosen.role === role ? chosen : { ...chosen, role, name: `${chosen.name} (borrowed from ${chosen.role})` };
     } else sheet.sections[i] = dealSection(dir, role, used, sheet.sections[i - 1]?.shape, sheet.sections[i + 1]?.shape, sheet.input) || sheet.sections[i];
-  } else { console.error('Unknown slot. Use hero, type, palette, photos, section:<role>, section:<role>=<id> or direction.'); process.exit(2); }
+  } else { console.error('Unknown slot. Use hero, type, palette, photos, scenes, section:<role>, section:<role>=<id> or direction.'); process.exit(2); }
 } else {
   const sector = String(opt('sector', ''));
   if (!SECTORS.includes(sector)) {
@@ -203,7 +205,7 @@ if (opt('redraw')) {
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(sheetPath, JSON.stringify(sheet, null, 1));
-if (!opt('redraw') || String(opt('redraw')) === 'direction') writeHist({ at: sheet.at, direction: sheet.direction.id, type: sheet.type?.id, palette: sheet.palette?.id, hero: sheet.hero?.id, sector: sheet.input.sector });
+if (!opt('redraw') || String(opt('redraw')) === 'direction') writeHist({ at: sheet.at, direction: sheet.direction.id, type: sheet.type?.id, palette: sheet.palette?.id, hero: sheet.hero?.id, sector: sheet.input.sector, scenes: (sheet.scenes || []).map((x) => x.id) });
 console.log(render(sheet));
 
 // ---------- dealing ----------
@@ -257,7 +259,37 @@ function deal(input, redraws) {
     if (sec) s.sections.push(sec); else s.sections.push({ id: null, role, shape: null, name: role, blueprint: null });
   }
   s.references = dealReferences(dir, input);
+  s.scenes = dealScenes(dir, input, []);
   return s;
+}
+// The page's big scroll moments (references/scenes.md): two or three tested scenes from different
+// families, each placed on a section of the argument it can carry. Expressive sectors and tones get three.
+function dealScenes(dir, input, exclude) {
+  if (!L.scenes.length) return [];
+  const has = (need) => input.have.includes(need) || need === 'photography';
+  const fits = (sc) => !exclude.includes(sc.id) && (sc.sectors || ['*']).some((x) => x === '*' || x === input.sector) && (sc.needs || []).every(has);
+  let pool = L.scenes.filter(fits);
+  if (pool.length < 2) pool = L.scenes.filter((sc) => !exclude.includes(sc.id) && (sc.needs || []).every(has));
+  if (!pool.length) return [];
+  const loud = ['agency', 'studio-portfolio', 'personal-portfolio', 'fashion', 'culture', 'music', 'event', 'architecture', 'physical-product', 'real-estate', 'hospitality'].includes(input.sector) || ['bold', 'playful', 'luxury', 'editorial'].includes(input.tone);
+  const quiet = ['quiet', 'technical'].includes(input.tone);
+  const n = Math.min(pool.length, quiet ? 2 : loud ? 3 : 2);
+  const recentIds = hist.slice(0, 4).flatMap((h) => h.scenes || []);
+  let rest = fresh(pool, recentIds);
+  const out = []; const families = new Set(); const usedRoles = new Set();
+  while (out.length < n) {
+    let cands = rest.filter((sc) => !families.has(sc.family) && !(sc.position === 'opening' && out.some((o) => o.position === 'opening')) && !(sc.position === 'closing' && out.some((o) => o.position === 'closing')));
+    if (!cands.length) cands = pool.filter((sc) => !out.includes(sc) && !families.has(sc.family));
+    if (!cands.length) break;
+    const sc = pick(cands); out.push(sc); families.add(sc.family); rest = rest.filter((x) => x !== sc);
+  }
+  // the section each scene carries: the first role of the argument it suits that no other scene has taken
+  const roles = ['hero', ...input.sections];
+  return out.map((sc) => {
+    const role = sc.position === 'opening' ? 'hero' : roles.find((r) => (sc.roles || []).includes(r) && !usedRoles.has(r) && r !== 'hero') || null;
+    if (role) usedRoles.add(role);
+    return { ...sc, carries: role };
+  }).sort((a, b) => (a.carries ? roles.indexOf(a.carries) : 99) - (b.carries ? roles.indexOf(b.carries) : 99));
 }
 function dealHero(dir, input, exclude) {
   // the direction's own list, and any hero written for this direction since (the October 2026 study added some)
@@ -516,10 +548,26 @@ function render(s) {
   });
   p();
   if (s.motion) { p(`## 8. Motion — ${s.motion.name}`); p(s.motion.description); p('This is the signature move, the one loud moment. Around it the page still needs the rest of the motion layer (SKILL.md step 9): an entrance for the parts of every section, feedback on every control, and one moving picture. The inspector fails a page that barely moves. Recipes: references/motion.md.'); p(); }
-  if (d.richness) { p('## 9. Where the richness comes from'); p(d.richness); p(); }
-  if (d.pitfalls) { p('## 10. How this direction goes wrong'); p(d.pitfalls); p(); }
+  if (s.scenes?.length) {
+    p('## 9. Scroll scenes');
+    p(`The page's big moments: ${s.scenes.length} scroll scenes, tested and ready to fill. They are part of the composition, so build them in step 6 with the section they carry, not as a motion afterthought. Each runs on the shared stage (assets/scenes/stage.js and stage.css, with GSAP and Lenis from the pinned CDN lines in stage.js) and ships its own finished composition for reduced motion and for phones that rest. How to put one on a page, fill it and check it: references/scenes.md. Check them with \`node <skill>/scripts/scenes.mjs <page>\` and look at every sheet.`);
+    for (const sc of s.scenes) {
+      p();
+      p(`### ${sc.name} (\`${sc.id}\`)${sc.carries ? ` — carries the ${sc.carries === 'hero' ? 'first screen' : sc.carries + ' section'}` : ' — a transition between two sections'}`);
+      p(sc.summary);
+      if (sc.place) p(`Where: ${sc.place}`);
+      if (sc.content) p(`Content: ${sc.content}`);
+      if (sc.options) p(`Options (data-options): ${sc.options}`);
+      p(`Files: \`<skill>/assets/scenes/${sc.id}.js\` and \`${sc.id}.css\`; a working example: \`<skill>/assets/scenes/demo/${sc.id}.html\`.${sc.phone ? ' On a phone: ' + sc.phone : ''}`);
+    }
+    p();
+    p('Leave a quiet section between two scenes so each one lands. A scene whose content you cannot fill honestly is redrawn (`--redraw scenes`), never faked.');
+    p();
+  }
+  if (d.richness) { p('## 10. Where the richness comes from'); p(d.richness); p(); }
+  if (d.pitfalls) { p('## 11. How this direction goes wrong'); p(d.pitfalls); p(); }
   if (s.references?.length) {
-    p('## 11. Real references');
+    p('## 12. Real references');
     p('Studied sites that work this way. Take the principle, never the specifics: no names, copy, images or signature assets of theirs.');
     for (const r of s.references) p(siteCard(r, false));
     p('Full notes on any of them: `node draw.mjs --site <id>`.'); p();
