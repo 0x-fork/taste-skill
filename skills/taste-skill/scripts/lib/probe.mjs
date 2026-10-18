@@ -648,6 +648,20 @@ export function layout() {
   // fixed headers and corner labels count here: that is where text most often creeps to the edge
   const edge = 16;
   const edgeText = boxes.filter((b) => b.kind === 'text' && b.chars >= 3 && b.size < 40 && b.l >= -1 && b.r <= W + 1 && (b.l < edge || b.r > W - edge) && !b.el.closest('[class*="marquee" i],[class*="ticker" i],marquee,[data-ui],table')).slice(0, 8).map((b) => ({ text: b.text, side: b.l < edge ? 'left' : 'right', px: Math.round(b.l < edge ? b.l : W - b.r) }));
+  // display type that runs off one edge by a sliver while it starts inside the margin: a fit error, not a bleed
+  const slivers = boxes.filter((b) => b.kind === 'text' && b.size >= 40 && b.chars >= 3 && ((b.l >= 8 && b.r > W + 1 && b.r - W < b.size * 0.25) || (b.r <= W - 8 && b.l < -1 && -b.l < b.size * 0.25))).slice(0, 4).map((b) => ({ text: b.text.slice(0, 30), px: Math.round(b.r > W ? b.r - W : -b.l), side: b.r > W ? 'right' : 'left' }));
+  // the largest empty rectangle on the first screen (below a 90px band for the navigation), on a 24 x 15 grid
+  let voidShare = 0, voidBox = null;
+  if (W >= 1000) {
+    const C = 24, Rn = 15, cw = W / C, ch = H / Rn, occ2 = Array.from({ length: Rn }, () => new Array(C).fill(0));
+    for (const b of boxes) { if (b.t - SY > H || b.b - SY < 0) continue; const c0 = Math.max(0, Math.floor(b.l / cw)), c1 = Math.min(C - 1, Math.floor((b.r - 1) / cw)), r0 = Math.max(0, Math.floor((b.t - SY) / ch)), r1 = Math.min(Rn - 1, Math.floor((b.b - SY - 1) / ch)); for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) occ2[r][c] = 1; }
+    const top = Math.ceil(90 / ch), hgt = new Array(C).fill(0);
+    for (let r = top; r < Rn; r++) {
+      for (let c = 0; c < C; c++) hgt[c] = occ2[r][c] ? 0 : hgt[c] + 1;
+      for (let c = 0; c < C; c++) { let mn = Infinity; for (let k = c; k < C && hgt[k]; k++) { mn = Math.min(mn, hgt[k]); const a = mn * (k - c + 1); if (a > voidShare) { voidShare = a; voidBox = { x: Math.round(c * cw), y: Math.round((r - mn + 1) * ch), w: Math.round((k - c + 1) * cw), h: Math.round(mn * ch) }; } } }
+    }
+    voidShare = Math.round((voidShare / (C * Rn)) * 100) / 100;
+  }
   // a fixed picture layer that covers the screen (a canvas scene, a film) hides what the DOM cannot see
   const stage = boxes.some((b) => b.layer === 'fixed' && b.kind === 'media' && (b.r - b.l) * (b.b - b.t) >= W * H * 0.9);
   // the first screen: is the title a bare name, with nothing at reading size saying what this is?
@@ -658,7 +672,7 @@ export function layout() {
   const lefts = flow.filter((b) => b.kind === 'text' && b.size >= 14 && !/center|right|end/.test(b.align) && b.l >= 0 && (b.el.closest('h1, h2, h3') || (b.chars >= 60 && b.el.closest('p, blockquote'))) && !b.el.closest('nav, footer, [data-ui], table, li, figcaption')).map((b) => b.l).sort((a, b) => a - b);
   const edges = []; for (const x of lefts) { const e = edges.find((g) => Math.abs(g.x - x) <= 10); if (e) e.n++; else edges.push({ x: Math.round(x), n: 1 }); }
   edges.sort((a, b) => b.n - a.n);
-  return { viewport: { w: W, h: H }, pageH, margins: { left: L == null ? null : Math.round(L), right: R == null ? null : Math.round(R) }, sections, gaps, h1s, edgeText, edges: edges.slice(0, 12), leftBlocks: lefts.length, bodySize, stage, explains };
+  return { viewport: { w: W, h: H }, pageH, margins: { left: L == null ? null : Math.round(L), right: R == null ? null : Math.round(R) }, sections, gaps, h1s, edgeText, edges: edges.slice(0, 12), leftBlocks: lefts.length, bodySize, stage, explains, slivers, voidShare, voidBox };
 }
 
 // app() measures what an app screen (dashboard, admin, settings, inbox) gets right or wrong: the shell,

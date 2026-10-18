@@ -177,8 +177,10 @@ Write the whole page as a copy deck (plain text) before markup, following `refer
 - **Every headline fits in two lines or fewer at every width.** Do the arithmetic in copy.md §2 before
   committing to a sentence: about 32 characters is safe everywhere at a confident size. The studied
   gallery heroes have a median of 5 words and 32 characters.
-- One supporting sentence. One primary action, named for what it does, as a real button on the first
-  screen.
+- One supporting sentence, directly under the headline (32–48px below it) and shown with it, never
+  docked at the foot of the first screen or held back by an animation. When the headline is a name or
+  a figure of speech, this sentence says plainly what the thing is. One primary action, named for what
+  it does, as a real button on the first screen.
 - **The first screen answers the visitor's first question in large type.** For an event: what it is,
   when and where (the dates belong in the headline or at the second size, never only in small text).
   For a product: what it is and what it costs or does. For a person: who and what they do. Every
@@ -227,6 +229,13 @@ not finished. Order of work:
    5. the photographs dealt on the sheet, only where an honestly generic picture fits (the sea for a
       sea house), never as a stand-in for the subject;
    6. type and colour alone.
+
+   When the project has footage or a real picture of its own process or product, the first screen
+   shows it, large (about 40% of the screen or more). Never write a sentence on the page about where
+   the pictures come from or what they are not ("none of these shows our bar"): a caption says what
+   the picture is, and the credit line sits small in the footer. A portfolio whose work is invented
+   for the brief draws each piece as a finished still of that work (its title card with its own type,
+   an end frame, a poster), with real detail, never as a pictogram of the client's product.
 
    **The floor, which the inspector checks:** at least four real pictures on the page, usually six to
    twelve (photographs, archival images, maps, engravings, footage, raster artwork; for software, its

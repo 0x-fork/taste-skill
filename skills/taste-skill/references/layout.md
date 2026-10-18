@@ -165,6 +165,14 @@ are from the study of 97 Sites of the Day (October 2026).
   the other. Never leave the other half to plain ground.
 - The middle counts too: a card at the left edge and a lone button at the right with the middle third
   empty is the same hole.
+- The first screen counts too. When the sentence and the button take the left third above a name
+  docked at the foot, the upper right holds something (the picture or film, one fact, the action) or
+  the name grows up to meet them; in testing, 60% of a first screen left as plain ground under the
+  navigation read as a hole, and the inspector now warns when one empty block takes 28% of the first
+  screen or more.
+- A display line fitted to the width is fitted by measurement (a small script that sets its size from
+  the content box, or SVG text with `textLength`), never by a size guessed for one face: a name that
+  starts on the margin and runs a few pixels off the other edge reads as a mistake.
 - A centred composition has one axis, equal flanks and one thing on it, not a stack of heading,
   paragraph and two buttons.
 
