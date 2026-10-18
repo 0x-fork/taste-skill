@@ -6,6 +6,16 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ## 2.1.0 - unreleased
 
+### Scroll scenes
+
+The big scroll moments award sites are remembered for, as tested building blocks: a camera flying through a field of pictures, a picture that grows from a window to the whole screen, a word that buckles under the scroll, photographs that orbit and land in a grid.
+
+- Taken apart from 43 of the most motion-led recent Sites of the Day, recorded frame by frame while scrolling (every moving element's transform, opacity and clip-path per step, a filmstrip, the page's own code read for technique): 261 scenes described, grouped into scene types, each specified with exact numbers, then rebuilt from scratch, tested at desktop and phone width and under reduced motion, and reviewed against the scenes it came from. Nothing a site owns is in them.
+- **`assets/scenes/`**: the shared stage (`stage.js`, `stage.css`: a sticky stage scrubbed by native scroll with GSAP ScrollTrigger, optional Lenis smoothing that stays off for touch and reduced motion, a finished composition for reduced motion, no script and a failed CDN), one `.js` and `.css` per scene, and a working demo page of each.
+- **`draw.mjs`** deals two or three scenes per page from different families and places each on a section of the argument (`--redraw scenes`, `--list scenes`); **`references/scenes.md`** says how to put one on a page, fill it, fit it and check it; `SKILL.md` builds them in step 6, as composition.
+- **`scripts/scenes.mjs`** photographs every scene at 0-100% of its hold on desktop and phone, and the reduced-motion page. **`inspect.mjs --film`** films the whole scroll a third of a screen at a time (on by itself when the sheet dealt scenes) and fails a scene that never started or rests on desktop.
+- `motion.md`: smoothing allowed through the stage; inside a scene the scene's numbers apply; outside scenes the quiet limits stay. Still no preloader, gate, custom cursor or wheel capture.
+
 ### App screens: dashboards, admin, settings, inboxes
 
 The default skill now builds the screens people work in, not only the pages they read. `SKILL.md` asks first whether the job is a page or an app screen; an app screen takes its own route.
@@ -15,7 +25,7 @@ The default skill now builds the screens people work in, not only the pages they
 - **`draw.mjs --app`** deals an app style from `library/app.json`: seven styles (achromatic ledger, framed sheet, accent ladder, editorial greeting, pastel consumer, true-black flat, data terminal), each with tokens, type, a colour budget and the one move that makes it recognisable, plus five shells and 21 screen patterns for 13 kinds of product.
 - **`inspect.mjs --app`** and **`lint.mjs --app`** (switched on by an app sheet) judge app screens by their own rules: quiet borders, small labels, repeated panels and tables are allowed; heavy shadows, glass, icons in tinted squares, rainbow charts, placeholder data, text under 11px, a sidebar left on the phone, ragged rows, a thin first screen, landing-page titles and figures, a dead strip beside the canvas and colour sprawl are not.
 - **`assets/app.css`** (a neutral shell, panels, divided KPI strip, tables, pills, controls, tabs, empty states and the phone fold) and **`assets/charts.js`** (line, bars, ring, bar list, plan against spent, share against target, with annotations, reference lines, forecasts and capped ranges), both set to the study's defaults.
-- Tested in three blind rounds of eight, six and five builds judged from screenshots against the reference screens; the warnings at the top of the chapter come from what the judges marked down.
+- Tested in four blind rounds of eight, six, five and three builds judged from screenshots against the reference screens; the warnings at the top of the chapter come from what the judges marked down. The last round's complaint, "a well-applied kit, not a product with its own face", led to a required face step (each style lists ways to take one from the brief) and signature patterns for kinds of product (a power-flow summary, a leave timeline, a cover matrix, a sell-out strip).
 
 ### The frame of a page
 
