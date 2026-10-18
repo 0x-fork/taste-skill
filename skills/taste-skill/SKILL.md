@@ -45,8 +45,19 @@ Decide first which of two kinds of work this is.
   whole before you start; the page run below does not apply.
 
 A product site that shows its app is a page; the interface fragments on it follow the app-screen
-rules for their insides. When a request mixes both (a landing page and the dashboard behind it),
-build each with its own run and one shared palette and typeface.
+rules for their insides. Deal the product's app style once, in its own folder, with the page's colours
+and type kept:
+
+```bash
+node <skill>/scripts/draw.mjs --app --kind <kind> --brief "<the product>" --keep palette,type --out .taste-skill/app
+```
+
+and build every fragment the page shows (the hero's live screen, a feature's crop, a chart) as a real
+piece of that app: `assets/app.css` for its panels, tables and controls, `assets/charts.js` for its
+charts, real data that adds up, one finding stated, cropped and scaled the way the page's blueprint
+treats a picture. A fragment that looks like a working product is the strongest picture a software page
+has; grey bars and lorem numbers are the weakest. When a request mixes both (a landing page and the
+dashboard behind it), build each with its own run and one shared palette and typeface.
 
 ## The run
 

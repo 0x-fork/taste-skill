@@ -1,8 +1,8 @@
 // Zero-dependency Chrome DevTools Protocol client.
 // Drives an installed Chrome / Edge / Chromium in headless mode over Node's built-in WebSocket.
 // Requires Node 22+. No npm install.
-import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, rmSync, writeFileSync, readdirSync, statSync, openSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,14 +37,20 @@ export function findChrome() {
   return null;
 }
 
-// Profiles from runs that were killed before close(): gone after six hours (no run lasts that long).
+// Profiles from runs that were killed before close(): removed once no Chrome holds them (a running
+// Chrome keeps the profile's lockfile open) and they are a few minutes old.
 function sweepProfiles(base) {
   try {
-    const cutoff = Date.now() - 6 * 3600 * 1000;
+    const cutoff = Date.now() - 3 * 60 * 1000;
     for (const name of readdirSync(base)) {
       if (!name.startsWith('ad-chrome-')) continue;
       const p = join(base, name);
-      try { if (statSync(p).mtimeMs < cutoff) rmSync(p, { recursive: true, force: true }); } catch {}
+      try {
+        if (statSync(p).mtimeMs > cutoff) continue;
+        const lock = join(p, 'lockfile');
+        if (existsSync(lock)) closeSync(openSync(lock, 'r+')); // throws while a Chrome holds it
+        rmSync(p, { recursive: true, force: true });
+      } catch {}
     }
   } catch {}
 }
@@ -63,8 +69,14 @@ export class Browser {
     const base = process.env.TASTE_SKILL_TMP || tmpdir();
     sweepProfiles(base);
     const dir = mkdtempSync(join(base, 'ad-chrome-'));
-    const drop = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
+    // On exit Chrome still holds the profile's files: stop it first, then remove the folder.
+    let pid = 0;
+    const drop = () => {
+      try { if (pid) { if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(pid), '/T', '/F'], { stdio: 'ignore' }); else process.kill(pid, 'SIGKILL'); } } catch {}
+      try { rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch {}
+    };
     process.once('exit', drop);
+    for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.once(sig, () => { drop(); process.exit(130); });
     const args = [
       '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${dir}`,
       '--disk-cache-size=16777216', '--media-cache-size=16777216',
@@ -75,6 +87,7 @@ export class Browser {
       '--enable-unsafe-swiftshader', `--window-size=${width},${height}`, ...extraArgs, 'about:blank',
     ];
     const proc = spawn(exe, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    pid = proc.pid;
     const wsUrl = await new Promise((resolve, reject) => {
       let buf = '';
       const t = setTimeout(() => reject(new Error('Chrome did not start within 20s')), 20000);
