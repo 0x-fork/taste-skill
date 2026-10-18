@@ -4,17 +4,25 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ---
 
-## 2.1.0 - unreleased
+## 2.1.0 - 2026-10-19
 
-### Scroll scenes
+### The scroll-scene engine
 
-The big scroll moments award sites are remembered for, as tested building blocks: a camera flying through a field of pictures, a picture that grows from a window to the whole screen, a word that buckles under the scroll, photographs that orbit and land in a grid.
+The groundwork for big scroll scenes, the moments award sites are remembered for (a camera flying through a field of pictures, a picture that grows from a window to the whole screen). The library of tested scenes, taken apart from 43 motion-led Sites of the Day and rebuilt from scratch, follows in 2.2; this release ships what they run on and the checks that judge them.
 
-- Taken apart from 43 of the most motion-led recent Sites of the Day, recorded frame by frame while scrolling (every moving element's transform, opacity and clip-path per step, a filmstrip, the page's own code read for technique): 261 scenes described, grouped into scene types, each specified with exact numbers, then rebuilt from scratch, tested at desktop and phone width and under reduced motion, and reviewed against the scenes it came from. Nothing a site owns is in them.
-- **`assets/scenes/`**: the shared stage (`stage.js`, `stage.css`: a sticky stage scrubbed by native scroll with GSAP ScrollTrigger, optional Lenis smoothing that stays off for touch and reduced motion, a finished composition for reduced motion, no script and a failed CDN), one `.js` and `.css` per scene, and a working demo page of each.
-- **`draw.mjs`** deals two or three scenes per page from different families and places each on a section of the argument (`--redraw scenes`, `--list scenes`); **`references/scenes.md`** says how to put one on a page, fill it, fit it and check it; `SKILL.md` builds them in step 6, as composition.
-- **`scripts/scenes.mjs`** photographs every scene at 0-100% of its hold on desktop and phone, and the reduced-motion page. **`inspect.mjs --film`** films the whole scroll a third of a screen at a time (on by itself when the sheet dealt scenes) and fails a scene that never started or rests on desktop.
+- **`assets/scenes/stage.js` and `stage.css`**: a sticky stage scrubbed by native scroll with GSAP ScrollTrigger (pinned versions), optional Lenis smoothing that stays off for touch and reduced motion, and a finished composition for reduced motion, no script and a failed CDN. `references/scenes.md` says how to build a scene on it.
+- **`scripts/scenes.mjs`** photographs every scene on a page at 0-100% of its hold on desktop and phone, and the reduced-motion page. **`inspect.mjs --film`** films the whole scroll a third of a screen at a time, and the inspector fails a scene that never started or rests on desktop.
+- `draw.mjs` can deal scenes from `library/scenes.json` once it exists (`--redraw scenes`, `--list scenes`).
 - `motion.md`: smoothing allowed through the stage; inside a scene the scene's numbers apply; outside scenes the quiet limits stay. Still no preloader, gate, custom cursor or wheel capture.
+
+### Product pages that show their app
+
+A software product's page builds every interface fragment it shows (the hero's live screen, a feature crop, a chart) as a real piece of the app: its style dealt once with `draw.mjs --app --keep palette,type --out .taste-skill/app`, built with `app.css` and `charts.js`, real data that adds up.
+
+### Fixes
+
+- The inspector's throwaway Chrome profiles are removed reliably (Chrome is stopped before its profile is deleted, the profile cache is capped, profiles left by killed runs are swept); a long test session had left tens of GB in the temp folder. `TASTE_SKILL_TMP` moves them off the system drive.
+- `motion.md` and `research.md`: a claim that smooth-scroll pages showed empty frames mid-scroll was a capture artefact and is gone.
 
 ### App screens: dashboards, admin, settings, inboxes
 

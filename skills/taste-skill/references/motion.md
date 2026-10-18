@@ -24,8 +24,8 @@ scrolls, and fails it under eight elements. The motion layer has five parts:
 - **Two or three scroll scenes:** the big, scroll-driven moments award sites are remembered for (a
   camera flying through a field of pictures, a picture that grows from a window to the whole screen,
   type that crosses a held stage, cards that deal out and stack). The direction sheet deals them from
-  `library/scenes.json`; `references/scenes.md` says how to fill and fit them. They are where the page
-  is bold; everything else stays quiet so they land.
+  `library/scenes.json` when the library has scenes for the brief; `references/scenes.md` says how to
+  fill and fit them. They are where the page is bold; everything else stays quiet so they land.
 
 - **One signature moment:** the thing a visitor would describe an hour later: the headline that rises
   out of a mask, the image that opens like a shutter, the wordmark that scales with the scroll. The

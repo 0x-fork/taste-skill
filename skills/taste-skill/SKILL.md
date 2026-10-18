@@ -264,7 +264,7 @@ not finished. Order of work:
    `references/imagery.md` covers searching, licences and credits, video, drawing, crops and treatments.
 5. **The live thing** from step 4, built into the section where it proves the claim (often the hero
    or the booking), with real content, a thumb-sized phone version and a plain fallback.
-6. **The scroll scenes** on the sheet (section 9), each with the section it carries: the page's big
+6. **The scroll scenes,** when the sheet deals them (section 9), each with the section it carries: the page's big
    moments, the camera that flies through the work, the picture that opens to the whole screen, the
    word that buckles under the scroll. Copy the shared stage and the scene's files from
    `<skill>/assets/scenes/`, fill the scene with this project's own pictures and words, and set the
@@ -326,7 +326,7 @@ Judge only the pictures. If a problem is visible in a screenshot, it is real, wh
 
 Now build the motion layer. It is required, and it is more than one fade: the inspector counts the
 elements that really move while the page loads and is scrolled, and fails a page under eight (it warns
-under sixteen). The scroll scenes are already built (step 6); around them the layer has four parts:
+under sixteen). Any scroll scenes are already built (step 6); around them the layer has four parts:
 
 1. **The signature move** named on the sheet: one, done well (a dealt scene can be it).
 2. **An entrance for the parts of every section:** the heading, then the text, then the picture,
@@ -495,6 +495,6 @@ open collections could not be searched.
 | `scripts/lint.mjs` · `scripts/inspect.mjs` | The gate. |
 | `scripts/scenes.mjs` | The gate for scroll scenes: each scene at 0-100% of its hold, desktop, phone, reduced motion. |
 | `assets/base.css` · `assets/base.js` | An optional neutral foundation to build on. |
-| `assets/scenes/` | The scroll scenes: the shared stage (`stage.js`, `stage.css`), one `.js` and `.css` per scene, and a working demo page of each in `demo/`. |
+| `assets/scenes/` | The scroll scenes: the shared stage (`stage.js`, `stage.css`) and, for each scene in the library, its `.js`, `.css` and a working demo page in `demo/`. |
 | `assets/app.css` · `assets/charts.js` | For app screens: a neutral shell, panels, tables and controls, and small SVG charts drawn to the app rules. |
 | `library/` | The data the draw reads: directions, heroes, sections, type systems, palettes, photographs, studied sites, motions, scroll scenes (`scenes.json`), and the app styles, shells and screen patterns (`app.json`). Do not read it whole; use the script. |

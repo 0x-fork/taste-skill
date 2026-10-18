@@ -5,10 +5,11 @@ becomes a scene. A camera flies through a field of pictures, a picture grows fro
 screen, a word buckles under the scroll, a set of photographs orbits and lands in a grid. These are what
 visitors remember from award sites, and what a page built from tidy sections alone never has.
 
-Every scene in the library was taken apart from recent Awwwards Sites of the Day (October 2026: 43
-sites recorded frame by frame while scrolling, 261 scenes described, 30 types), then rebuilt from
-scratch in our own code, tested frame by frame at desktop and phone width and under reduced motion, and
-reviewed against the scenes it came from. Nothing a site owns is in them.
+The scene library is taken apart from recent Awwwards Sites of the Day (October 2026: 43 sites recorded
+frame by frame while scrolling, 261 scenes described, 30 types), rebuilt from scratch in our own code,
+tested frame by frame at desktop and phone width and under reduced motion, and reviewed against the
+scenes it came from. Nothing a site owns is in them. Until `library/scenes.json` ships the draw deals
+none; a page that needs a scene builds one on the stage (section 8), with every rule here.
 
 ## Contents
 

@@ -141,7 +141,9 @@ The default skill is built from a study of 247 curated sites. A build runs in si
 
 A build takes roughly 30 to 45 minutes and a few hundred thousand tokens. Details are in the [changelog](CHANGELOG.md) and the [study](skills/taste-skill/references/research.md).
 
-Dashboards and app screens (v2.1) take their own route: the skill deals one of the app styles distilled from real product screens, builds the shell, the data, the charts and the tables to those numbers, and checks the result with app rules: quiet panels, aligned figures, colour spent on data, a phone layout where the navigation folds away.
+Dashboards and app screens (v2.1) take their own route: the skill deals one of the app styles distilled from real product screens, builds the shell, the data, the charts and the tables to those numbers, and checks the result with app rules: quiet panels, aligned figures, colour spent on data, a phone layout where the navigation folds away. A product's landing page builds the app it shows the same way, so its screenshots look like a working product.
+
+v2.1 also checks the frame of every page (a clear title on the first screen, equal margins, no section shoved to one side, no random blank stretches) and moves the way strong award sites do, measured on the latest 100 Awwwards Sites of the Day.
 
 ## Skills
 
