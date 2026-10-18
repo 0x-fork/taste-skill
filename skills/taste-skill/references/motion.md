@@ -904,10 +904,9 @@ Seen in the study, with how often, and what the house does instead.
   does nothing).** The visitor cannot tell where they are, how much is left or how to get out, and the
   keyboard and screen readers get nothing. Usability 6.01 against 6.50 for pages that scroll. House:
   native scroll; any scene is driven by scroll position on a sticky stage that ends, with a count.
-- **Smooth-scroll libraries (67 of 99).** They make every scrubbed scene possible and every page lag
-  behind the hand: in the study's capture, frames taken 160 ms after a wheel step came back empty where
-  the settled frame was full on 52 of the 67, against 4 of the 32 without a library. House: native
-  scroll.
+- **Smooth-scroll libraries (67 of 99).** They make the scrubbed scenes feel weighted, and they also
+  put a delay between the hand and the page; with a long ease the page keeps sliding after the wheel
+  stops.
 - **Custom cursors (28 of 99).** Followers, image trails, a lens that smears the headline it sits on,
   labels that only exist on hover; 10 of the 28 have any reduced-motion rule. House: the system cursor;
   labels are on the page.

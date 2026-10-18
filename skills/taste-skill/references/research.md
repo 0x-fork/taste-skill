@@ -315,8 +315,9 @@ the frame (margins, balance, empty space, titles). About three in four of these 
 the first study.
 
 - **Capture.** Headless Chrome at 1440×900 and 390×844 on 18 October 2026: four frames of the first
-  4.5 seconds after load, every screen while scrolling with real wheel input (a frame 160ms after each
-  step and one at rest), five phone screens, and a measurement pass in the page: every picture and
+  4.5 seconds after load, every screen while scrolling with real wheel input (one frame at rest per
+  step; the mid-step frames were cut from the top of the document instead of the viewport, so they
+  were not used), five phone screens, and a measurement pass in the page: every picture and
   clip with its box, ratio, fit and corners; every section's content edges and pictures; blank runs;
   the CSS that loaded (curves, durations, keyframes, breakpoints, feature counts); the animations,
   transitions and script-driven moves that actually ran; GSAP tweens and scroll triggers where the

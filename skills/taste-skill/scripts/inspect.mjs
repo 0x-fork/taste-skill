@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // tasteskill / inspect — render the page in a real browser, measure it, and photograph it.
 //
-//   node inspect.mjs <url | path/to/file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--json]
+//   node inspect.mjs <url | path/to/file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--film] [--json]
+//
+// --film also photographs the scroll as a visitor sees it (a frame every third of a screen, real wheel
+// input) into desktop-film-NN.jpg, so a scroll scene is judged by its in-between states. A direction
+// that dealt scroll scenes switches it on by itself.
 //
 // --app judges an app screen (dashboard, admin, settings) by the rules in references/app-screens.md; a
 // direction dealt with draw.mjs --app switches it on by itself.
@@ -23,15 +27,16 @@ const widths = flag('widths', '1440,768,390').split(',').map(Number).filter(Bool
 let allow = flag('allow', '').split(',').filter(Boolean);
 const asJson = has('json');
 let appMode = has('app');
+let film = has('film');
 let dealtFonts = []; // the faces the saved sheet dealt, to catch a build that quietly fell back to a default
 const target = args[0];
 if (!target || target === '-h' || target.startsWith('--')) {
-  console.error('usage: node inspect.mjs <url | file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--json]');
+  console.error('usage: node inspect.mjs <url | file.html> [--out DIR] [--widths 1440,768,390] [--allow rule,rule] [--app] [--film] [--json]');
   process.exit(2);
 }
 // Allowances granted by the drawn direction (written by draw.mjs) apply automatically.
 for (const p of ['.taste-skill/direction.json', join(outDir, '..', 'direction.json')]) {
-  if (existsSync(p)) { try { const d = JSON.parse(readFileSync(p, 'utf8')); allow = [...new Set([...allow, ...(d.allow || [])])]; if (d.kind === 'app') appMode = true; dealtFonts = d.kind === 'app' ? [d.style?.tokens?.font?.family].filter(Boolean) : (d.input?.keep || []).includes('type') ? [] : [d.type?.display?.family, d.type?.text?.family].filter(Boolean); } catch {} break; }
+  if (existsSync(p)) { try { const d = JSON.parse(readFileSync(p, 'utf8')); allow = [...new Set([...allow, ...(d.allow || [])])]; if (d.kind === 'app') appMode = true; if (Array.isArray(d.scenes) && d.scenes.length) film = true; dealtFonts = d.kind === 'app' ? [d.style?.tokens?.font?.family].filter(Boolean) : (d.input?.keep || []).includes('type') ? [] : [d.type?.display?.family, d.type?.text?.family].filter(Boolean); } catch {} break; }
 }
 // A local file is served over http from a throwaway server on 127.0.0.1, so the browser never has to
 // open a file path (some sandboxes show Node and the browser different views of the disk) and relative
@@ -60,7 +65,7 @@ const name = (w) => (w >= 1100 ? 'desktop' : w >= 600 ? 'tablet' : 'mobile');
 
 mkdirSync(outDir, { recursive: true });
 // Screenshots from an earlier run would sit beside the new ones when the page got shorter.
-for (const f of readdirSync(outDir)) if (/^(desktop|tablet|mobile)-(fold|page-\d+)\.jpg$/.test(f)) unlinkSync(join(outDir, f));
+for (const f of readdirSync(outDir)) if (/^(desktop|tablet|mobile)-(fold|page-\d+|film-\d+)\.jpg$/.test(f)) unlinkSync(join(outDir, f));
 const browser = await Browser.launch();
 const helper = await browser.newPage({ width: 1600, height: 1000 });
 const report = { url: server ? target : url, at: new Date().toISOString(), allow, viewports: [], findings: [], images: [] };
@@ -145,6 +150,28 @@ try {
     const appM = appMode ? await page.eval(app).catch(() => null) : null;
     if (appM) appM.colourShare = await helper.eval(colourShare, 'data:image/jpeg;base64,' + frames[0]).catch(() => null);
 
+    // --film: the scroll as a visitor sees it. Real wheel input and a frame every third of a screen, so a
+    // scroll scene shows its in-between states, not only where each screen lands.
+    const filmSheets = [];
+    if (film && w >= 1100) {
+      await page.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`).catch(() => {});
+      await sleep(700);
+      const shots = []; let lastY = -1, still = 0;
+      for (let i = 0; i < 96; i++) {
+        shots.push(await page.screenshot({ quality: 70 }));
+        await page.wheel(Math.round(h / 3), { step: 100, pauseMs: 16 });
+        await sleep(420);
+        const y = await page.eval('Math.round(scrollY || document.scrollingElement.scrollTop || 0)').catch(() => -1);
+        if (y === lastY) { if (++still >= 2) break; } else still = 0;
+        lastY = y;
+      }
+      for (let i = 0; i < shots.length; i += 24) {
+        const p = join(outDir, `${label}-film-${String(i / 24 + 1).padStart(2, '0')}.jpg`);
+        await sheet(shots.slice(i, i + 24), 6, 320, 200, p);
+        filmSheets.push(p);
+      }
+    }
+
     const cols = w >= 1100 ? 2 : w >= 600 ? 3 : 4;
     const cellW = w >= 1100 ? 800 : w >= 600 ? 512 : 390;
     const cellH = Math.round((cellW * h) / w);
@@ -191,7 +218,7 @@ try {
     if (w >= 1100 && empty.length >= 2 && !allow.includes('empty-screens')) findings.push({ level: 'FAIL', id: 'empty-screens', width: w, message: `${empty.length} of ${frameChecks.length} desktop screens are almost empty ground (under 20% of the screen holds text, a picture or a colour field): screens ${empty.map(({ i }) => i + 1).join(', ')}.`, fix: 'An empty screen is a rest only once per page. Elsewhere it means the section is underbuilt: set its content larger, give it the full information, put it on a colour field, or cut it.' });
     report.viewports.push({ width: w, height: h, load: how, screens: frames.length, filled: frameChecks.map((f) => f?.filled ?? null), motion, metrics: m, layout: lay, app: appM, consoleErrors: page.consoleErrors.slice(0, 5) });
     report.findings.push(...(appMode ? findings.filter((f) => !APP_SKIP.has(f.id)) : findings));
-    report.images.push({ viewport: label, width: w, fold, pages: sheets });
+    report.images.push({ viewport: label, width: w, fold, pages: sheets, film: filmSheets });
     await page.close();
   }
   // Under prefers-reduced-motion the page is the finished page: nothing may stay hidden waiting for an
@@ -256,7 +283,7 @@ for (const [title, list] of [['FAIL — fix every one of these', fails], ['WARN 
 }
 line('LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:');
 const rel = (p) => relative(process.cwd(), p).split('\\').join('/');
-for (const im of report.images) { line(`  ${(im.viewport + ' ' + im.width + 'px').padEnd(15)} ${rel(im.fold)}`); for (const p of im.pages) line(`  ${''.padEnd(15)} ${rel(p)}`); }
+for (const im of report.images) { line(`  ${(im.viewport + ' ' + im.width + 'px').padEnd(15)} ${rel(im.fold)}`); for (const p of im.pages) line(`  ${''.padEnd(15)} ${rel(p)}`); for (const p of im.film || []) line(`  ${'scroll film'.padEnd(15)} ${rel(p)}  (6 frames a row, a third of a screen apart)`); }
 line('');
 line(`report: ${rel(join(outDir, 'report.json'))}`);
 line(fails.length ? `RESULT: ${fails.length} FAIL, ${warns.length} WARN — not done.` : `RESULT: 0 FAIL, ${warns.length} WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.`);
