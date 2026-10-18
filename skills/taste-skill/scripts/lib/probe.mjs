@@ -747,13 +747,51 @@ export function app() {
   // panels start on the first screen
   const panelEls = new Set(panels.map((p) => p.el));
   const tops = panels.filter((p) => { for (let a = p.el.parentElement; a && a !== B; a = a.parentElement) if (panelEls.has(a)) return false; return p.w < W * 0.97 || p.h < H * 2; });
+  // a column of cards stacked with a gutter of 24px or less is one block: two cards on the left that end level with
+  // one tall card on the right are not ragged. A pair is ragged only when the cards and their columns both end apart.
+  const below = (p) => tops.find((q) => q !== p && Math.abs(q.left - p.left) <= 4 && Math.abs(q.w - p.w) <= 4 && q.top >= p.bottom - 2 && q.top - p.bottom <= 24);
+  const columnBottom = (p) => { let b = p.bottom; for (let q = below(p), n = 0; q && n < 12; q = below(q), n++) b = q.bottom; return b; };
   const ragged = [];
   for (let i = 0; i < tops.length; i++) for (let k = i + 1; k < tops.length; k++) {
     const a = tops[i], b = tops[k];
     if (Math.abs(a.top - b.top) > 4 || a.w < 200 || b.w < 200 || (a.right > b.left - 4 && b.right > a.left - 4)) continue; // side by side, same row
-    const diff = Math.abs(a.bottom - b.bottom), tall = Math.max(a.h, b.h);
+    const diff = Math.min(Math.abs(a.bottom - b.bottom), Math.abs(columnBottom(a) - columnBottom(b))), tall = Math.max(a.h, b.h);
     if (diff > Math.max(24, tall * 0.12)) ragged.push({ diff, top: a.top });
   }
+  // the largest blank band inside a card: the vertical gap between consecutive pieces of its content (text, charts,
+  // pictures, controls, rules, fills), or from the last piece to the card's padding edge. A legend pinned to the foot
+  // of a stretched card, or four rows in a card kept at its neighbour's height, leave one.
+  const voids = [];
+  const seen = new Map();
+  const visibleIn = (el, root) => { if (seen.has(el)) return seen.get(el); let ok = true; for (let p = el; p && p !== root.parentElement; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < 0.05 || cs.position === 'fixed') { ok = false; break; } } seen.set(el, ok); return ok; };
+  for (const p of tops) {
+    if (p.el.matches('nav, aside, header, footer, dialog, [role="navigation"], [role="dialog"]') || p.el.querySelector('nav') || (sidebar && p.left < sidebar.w - 4) || p.h < 120) continue;
+    if (panels.filter((q) => q.el !== p.el && p.el.contains(q.el)).length >= 2) continue; // a frame of cards, not a card
+    const cs = getComputedStyle(p.el), pr = p.el.getBoundingClientRect();
+    const inTop = pr.top + (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.paddingTop) || 0), inBottom = pr.bottom - (parseFloat(cs.borderBottomWidth) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    const bg = rgba(cs.backgroundColor), spans = [];
+    const tw2 = document.createTreeWalker(p.el, NodeFilter.SHOW_TEXT), rg = document.createRange();
+    // text that opens a section (a heading, a summary, or text at 14px/600 or 15px/500 and up) may follow a wider, placed gap
+    for (let n = tw2.nextNode(); n; n = tw2.nextNode()) { if (!n.nodeValue.trim() || !n.parentElement || n.parentElement.closest('svg') || !visibleIn(n.parentElement, p.el)) continue; rg.selectNodeContents(n); const r = rg.getBoundingClientRect(); if (r.height > 0 && r.width > 0) { const pcs = getComputedStyle(n.parentElement); const fs = parseFloat(pcs.fontSize), fw = +pcs.fontWeight; spans.push([r.top, r.bottom, !!n.parentElement.closest('h1, h2, h3, h4, h5, h6, [role="heading"], summary, legend, caption') || (fw >= 600 && fs >= 14) || (fw >= 500 && fs >= 15)]); } }
+    for (const el of p.el.querySelectorAll('*')) {
+      if (el.parentElement && el.parentElement.closest('svg')) continue;
+      const r = el.getBoundingClientRect(); if (r.width < 2 || r.height < 1 || !visibleIn(el, p.el)) continue;
+      if (/^(svg|canvas|img|video|input|select|textarea|button|hr|progress|meter|iframe)$/i.test(el.tagName)) { spans.push([r.top, r.bottom]); continue; }
+      const ecs = getComputedStyle(el), fillC = rgba(ecs.backgroundColor);
+      if (fillC.a >= 0.1 && (bg.a < 0.9 || contrast({ ...fillC, a: 1 }, bg) >= 1.03) && r.height >= 2) spans.push([r.top, r.bottom]);
+      if ((parseFloat(ecs.borderTopWidth) || 0) >= 0.5 && ecs.borderTopStyle !== 'none' && rgba(ecs.borderTopColor).a > 0.05) spans.push([r.top, r.top + 1]);
+      if ((parseFloat(ecs.borderBottomWidth) || 0) >= 0.5 && ecs.borderBottomStyle !== 'none' && rgba(ecs.borderBottomColor).a > 0.05) spans.push([r.bottom - 1, r.bottom]);
+    }
+    const ys = spans.filter(([a, b]) => b > inTop - 2 && a < inBottom + 2).sort((a, b) => a[0] - b[0]);
+    if (!ys.length) continue;
+    // a band counts when it is over 40px, or over 64px when the content after it opens a new section
+    let end = ys[0][1], gap = 0, at = null;
+    for (const [a, b] of ys.slice(1)) { const g = a - end, section = ys.some(([t, , hd]) => hd && Math.abs(t - a) < 6); if (g > (section ? 64 : 40) && g > gap) { gap = g; at = end; } end = Math.max(end, b); }
+    if (inBottom - end > 40 && inBottom - end > gap) { gap = inBottom - end; at = end; }
+    const head = (p.el.querySelector('h1, h2, h3, h4, [role="heading"], header') || p.el).innerText || '';
+    if (gap > 40) voids.push({ gap: Math.round(gap), at: Math.round(at + SY), panel: head.trim().split('\n')[0].slice(0, 40) });
+  }
+  voids.sort((a, b) => b.gap - a.gap);
   const firstScreen = tops.filter((p) => p.top < H - 48).length;
   // the icon-in-a-tinted-square habit: small boxes with a coloured fill holding one icon, repeated
   const chips = []; let tiles = 0;
@@ -793,10 +831,37 @@ export function app() {
   const total = [...sizes.values()].reduce((a, b) => a + b, 0) || 1;
   const under13 = Math.round(([...sizes.entries()].filter(([s]) => s < 13).reduce((a, [, c]) => a + c, 0) / total) * 100) / 100;
   const h1 = document.querySelector('h1'); const h1r = h1 && h1.getBoundingClientRect();
+  // the screen's hero: its h1 when that is on the first screen, else the largest text there. Text is read with a
+  // space between element children, so a figure and its unit ("£55.94" and "at cost") do not run together.
+  const spaced = (el) => { const out = []; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) { const t = n.nodeValue.replace(/\s+/g, ' ').trim(); if (t && n.parentElement && !n.parentElement.closest('svg, script, style') && getComputedStyle(n.parentElement).display !== 'none') out.push(t); } return out.join(' ').replace(/\s+([,.;:!?%])/g, '$1').trim(); };
+  let heroEl = h1 && h1r && h1r.width > 0 && h1r.top + SY < H * 0.95 ? h1 : null;
+  if (!heroEl) {
+    let best = null; const hw = document.createTreeWalker(B, NodeFilter.SHOW_TEXT);
+    for (let n = hw.nextNode(); n; n = hw.nextNode()) {
+      const el = n.parentElement; if (!el || n.nodeValue.trim().length < 2 || el.closest('svg, nav, aside, [role="navigation"]')) continue;
+      const r = el.getBoundingClientRect(); if (r.top + SY > H * 0.95 || r.width < 1 || (sidebar && r.left < sidebar.w - 2)) continue;
+      const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity < 0.05) continue;
+      const size = parseFloat(cs.fontSize); if (!best || size > best.size) best = { el, size };
+    }
+    if (best) { heroEl = best.el; for (let p = heroEl; p && p !== B; p = p.parentElement) if (!/^inline/.test(getComputedStyle(p).display)) { heroEl = p; break; } }
+  }
+  let hero = null;
+  if (heroEl) {
+    const big = [...heroEl.querySelectorAll('*'), heroEl].map((e) => ({ e, s: parseFloat(getComputedStyle(e).fontSize) })).filter((o) => [...o.e.childNodes].some((c) => c.nodeType === 3 && c.nodeValue.trim())).sort((a, b) => b.s - a.s)[0]?.e || heroEl;
+    const cs = getComputedStyle(big), size = parseFloat(cs.fontSize), txt = spaced(heroEl), r = heroEl.getBoundingClientRect();
+    const tops2 = []; const lw = document.createTreeWalker(heroEl, NodeFilter.SHOW_TEXT); const lr = document.createRange();
+    for (let n = lw.nextNode(); n; n = lw.nextNode()) { if (!n.nodeValue.trim()) continue; lr.selectNodeContents(n); for (const rc of lr.getClientRects()) { const mid = rc.top + rc.height / 2; if (rc.width >= 1 && !tops2.some((t) => Math.abs(t - mid) < size * 0.55)) tops2.push(mid); } }
+    const lh = parseFloat(cs.lineHeight);
+    hero = { text: txt.slice(0, 200), words: txt.split(' ').filter(Boolean).length, chars: txt.length, lines: Math.max(1, tops2.length), size: Math.round(size), vw: Math.round((size / W) * 1000) / 10, font: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(), weight: +cs.fontWeight, tracking: Math.round(((parseFloat(cs.letterSpacing) || 0) / size) * 100) / 100, leading: Number.isFinite(lh) ? Math.round((lh / size) * 100) / 100 : 1.2, top: Math.round(r.top + SY), tag: heroEl.tagName.toLowerCase(), kind: 'heading', align: 'left', position: 'left' };
+  }
+  // charts and timelines on the screen (for the data-hue check): sizeable SVGs with marks, or blocks named as one
+  const chartRe = /(^|[\s_-])(chart|plot|graph|timeline|calendar|cal|gantt|heatmap|matrix|strip)([\s_-]|$)/i;
+  const chartCount = [...B.querySelectorAll('svg')].filter((s) => { if (s.parentElement && s.parentElement.closest('svg')) return false; const r = s.getBoundingClientRect(); return r.width >= 200 && r.height >= 80 && s.querySelectorAll('path, rect, line, polyline, circle').length >= 6 && shown(s); }).length
+    + [...B.querySelectorAll('[class]')].filter((e) => typeof e.className === 'string' && chartRe.test(e.className) && !e.closest('svg') && (() => { const r = e.getBoundingClientRect(); return r.width >= 200 && r.height >= 80 && shown(e); })()).length;
   return {
     viewport: { w: W, h: H }, dark: lum(pageBg) < 0.2, ground: hex(pageBg),
-    sidebar, topbar, canvas,
-    layout: { panels: tops.length, firstScreen, ragged: ragged.slice(0, 6) },
+    sidebar, topbar, canvas, hero, charts: chartCount,
+    layout: { panels: tops.length, firstScreen, ragged: ragged.slice(0, 6), voids: voids.slice(0, 4) },
     tiles,
     panels: { count: panels.length, radii: [...radii.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6), heavyBorders, borderSamples, heavyShadows, softShadows, shadowSamples, glass },
     chips: { count: chips.length, hues: chipHues.size, samples: chips.slice(0, 4) },

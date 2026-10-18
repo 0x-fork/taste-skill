@@ -53,28 +53,48 @@ the same every time, and each is now a rule below:
 Quiet is the starting point, not the goal. A screen that a person would trust shows more of the
 product than a template does: its people, its objects, its numbers and the one thing to do next.
 
-**Give the product a face.** After three rounds the judges' last complaint was the same on most
-screens: "a well-applied kit, not a product with its own identity". The style's tokens make a screen
-correct; these make it this product's:
+**Give the product a face.** After four rounds the judges' top complaint was the same on most
+screens: "a well-applied kit, not a product with its own identity" (stock Geist or Inter, a #f8f8f8
+ground, white 12px cards, lime on black). The style's tokens make a screen correct; these make it
+this product's, and choosing them is a step of the run, not a finish (§2.3):
 
+- **One face from the sheet, chosen before you build.** Each style lists two or three ways it takes a
+  face from the brief: a ground tinted from the product's world, a figure face with character, the
+  brand's hue on the main data element. Choose one, write it in your notes next to the screen's
+  question, and check that it shows on the first screenshot.
 - **The dealt typeface, really loaded.** A build that fell back to the default face landed on the
   default look; the inspector now fails it.
 - **The product's mark and name** at the top of the shell, drawn for this product (a simple
   monogram or symbol in the accent, from its name or its object), never a black square with a letter.
-- **One element only this product has**, built from its own things: the pace groups of a running
-  club as a unit chart, the couple as three lanes, a deploy's commit as the hero of the overview, the
-  family's car on tonight's charging window. Name it in your notes next to the screen's question.
-- **Its people and objects as themselves**: each person gets a stable initial and hue (at least 60
-  degrees from the next), products show their thumbnails, cover art shows the cover.
+- **One element only this product has**, built from its own things: an energy home's power flow, a
+  bakery's sell-out strip, a leave planner's cover against the minimum, the pace groups of a running
+  club as a unit chart, the couple as three lanes, a deploy's commit as the hero of the overview. The
+  sheet lists the library's signature elements whose words appear in the brief; otherwise invent one.
+  Name it in your notes next to the screen's question.
+- **The one chart hue on the main data element**: today's line, the booked bars, the current period,
+  the margin that breaks. A screen whose only hue is a delta reads as a kit, and the inspector warns
+  when a screen with charts carries no hue on its data (`no-data-hue`).
+- **Its people and objects as themselves**: each person gets a stable initial and a pale tint of their
+  own hue, with people listed next to each other at least 60 degrees apart. These tints are identity,
+  not data: they stay pale and out of the chart legends. Products show their thumbnails, cover art
+  shows the cover.
 - **Words of the trade** in labels and empty states ("Waiting on the customer", "Off sick", "Due
   on the 28th"), never the generic noun of a template ("Items", "Records", "Status").
 
 **Calendars and timelines** (house rule, from testing; the study has none). People down the left on a
-fixed 160-220px column, days across with today marked by a 1px accent line and weekends one tone
-step darker; bars 20-24px tall on a 32-40px row pitch with radius 4; routine bookings in a pale
-neutral fill with ink text, the kind of leave or work told apart by a 3px left edge in its hue or a
-glyph, and colour at full strength only for what needs a decision (a request breaking cover). Every
-colour drawn is in the legend.
+fixed 160-220px column, grouped under a team subheader rather than repeating the team on every row;
+days across with faint 1px day lines, weekends one tone step darker, and today marked by a 1px line
+in the one data hue with its date in ink. Bars are 20-24px tall at radius 4. One-line names sit on a
+32px pitch; a name with a subline (team, office) needs 40-44px, or the subline touches the next name.
+**Every kind of booking has its own mark**, so sickness reads apart from a holiday at a glance:
+holiday a pale fill, off sick a 1px diagonal hatch, long leave a darker grey step, working away an
+outline, a pending request a dashed outline. A style with a hue budget may add a 3px left edge in the
+hue for the kind the screen is about. Full colour is only for what needs a decision (a request that
+breaks cover). A label sits inside its bar; a bar too short for it shows the kind's code inside and
+the full label in its tooltip, or the label after the bar's end, never over the days before it.
+Holiday markers name their office in a multi-office product. Every swatch in the legend is the mark
+itself, scaled down, and lists only kinds on screen: `Charts.timeline(el, rows, kinds)` draws the bars
+and returns that legend from the same kinds map.
 
 ## Contents
 
@@ -142,7 +162,26 @@ Totals are computed from the rows, never typed in separately. Small numbers stay
 screens show new accounts with 1, 6 or 9 of something, drawn honestly at their real size. Write the
 figures that must agree as assertions in the data file (`console.assert(sold - cancelled === rsvps)`,
 the bins sum to the total, the parts to the whole) and read the console: in testing, a ticket table
-that did not reconcile with its own KPI cost a judge's trust in the whole screen.
+that did not reconcile with its own KPI cost a judge's trust in the whole screen. Checks that need
+computed values (allowance after a request, cover per day) go in the script that computes them.
+
+**Data that tells the truth** (house rules, from testing; judges checked every one of these):
+
+- **A fact shown twice is one variable.** A time window, a total or a state that appears in two cards
+  (the battery full 13:30-16:30 in the KPI label, the shaded span and the battery card) is one value in
+  the data file, and the copy and the chart annotation are both built from it. Two cards that
+  disagree by half an hour cost more trust than a missing card.
+- **Totals and deltas come from the parts as shown.** Sum the rounded pennies the screen displays,
+  never round the unrounded total separately: £21.68 + £8.34 − £3.81 is £26.21, and a screen that
+  says £26.22 is caught. A change is the difference of the two values on screen (£5.28 against
+  £5.22 is +£0.06, not +£0.07).
+- **Every relative figure names its baseline** in the same phrase: "3 h 40 m before close", "45 m
+  earlier than last Sunday", "+5 on the usual Monday". "Early", "up" or a bare "+5" next to another
+  time or figure reads as measured against that one.
+- **One name per time.** Shops close at 15:00 and the tills are cashed up at 15:12; the header and
+  the card use the same words for the same moment, and an error state rewrites the status line.
+- **If a caption has to say which bars are which, encode it in the chart instead**: a marked period in
+  a second tone with its own legend entry, a signed axis, a label on the mark.
 
 ### 2.2 Name the screen's one question
 
@@ -151,7 +190,9 @@ waiting for a reply?", "How much of this month's plan is left?". Write it in one
 three things:
 
 - **what is biggest.** In the study the largest block is always the one that carries the screen's
-  question, whatever form it takes (a chart, a plan, a ring, a list);
+  question, whatever form it takes (a chart, a plan, a ring, a list). The same holds for figures:
+  the largest figure on the screen answers the question the title row's sentence answers. In testing,
+  an 88% sun ratio at 32px out-shouted the 24px charging window the title led with;
 - **what comes first** in the reading order;
 - **what is left out.** The studied settings page shows three usage numbers and links to the
   analytics screen instead of drawing a chart; four screens draw no chart at all because a few
@@ -194,8 +235,9 @@ node <skill>/scripts/draw.mjs --app --kind <kind> --brief "<one line about the p
   --screens <screens> [--theme light|dark] [--keep palette,type] --options 3
 ```
 
-This deals three styles from `library/app.json`. `draw.mjs --app --list kinds` (or `styles`, or
-`screens`) prints the choices; the screens are `overview`, `analytics`, `list`, `detail`, `settings`, `wallet`,
+This deals up to three styles from `library/app.json` (fewer when only two suit the kind and the
+theme). `draw.mjs --app --list kinds` (or `styles`, `screens` or `signatures`) prints the choices; the
+screens are `overview`, `analytics`, `list`, `detail`, `settings`, `wallet`,
 `builder`, `inbox`, `home` and `report`. The library holds seven styles, each distilled from the
 studied screens that share its move:
 
@@ -222,6 +264,14 @@ Keep the style's one move intact and take every other value from the defaults in
 or the product is used in a way the style does not suit. With an existing brand, pass
 `--keep palette,type`, map its colours onto the roles in §9 and keep the style's colour budget.
 
+**Then choose its face, before any markup.** The sheet's "Its face" list gives two or three ways this
+style takes a face from the brief, and "Signature elements" lists the library's elements whose words
+appear in the brief (a power flow for an energy home, a sell-out strip for a bakery, a cover matrix
+and a kind-encoded timeline for a leave planner). Write in your notes, next to the screen's question:
+the face you chose, the signature element (from the sheet, or your own built from the product's
+things), and where each appears on the first screen. A style dealt to two products must not give them
+the same face: in four rounds, the screens that skipped this step were scored as the same kit.
+
 ### 2.4 Build the shell
 
 Build the frame first, empty: the sidebar or rail, the top bar if the shell has one, the canvas with
@@ -233,8 +283,11 @@ the cards land on the canvas edges.
 ### 2.5 Put in the data
 
 Render every block from the dataset; draw the charts from it too, with `<skill>/assets/charts.js`
-(`Charts.line`, `Charts.bars`, `Charts.ring`, `Charts.barList`) or your own SVG to the rules of §6,
-never a chart library's defaults and never a picture of a chart. Format every figure by §7.4: separators, fixed decimals per
+(`Charts.line`, `Charts.bars`, `Charts.diverging`, `Charts.ring`, `Charts.barList`, `Charts.plan`,
+`Charts.bullet`, `Charts.timeline`, `Charts.matrix`, `Charts.timeStrip`; the file's header lists their
+options) or your own SVG to the rules of §6, never a chart library's defaults and never a picture of a
+chart. The newer helpers return `{ svg, legend }`: put that legend in the card's header rather than
+drawing your own, so each swatch is the mark it explains. Format every figure by §7.4: separators, fixed decimals per
 metric, a sign on every change, units as smaller grey suffixes, tabular figures, right alignment in
 columns. Use the product's own words for labels. No placeholder data: the inspector fails lorem ipsum,
 Acme, John Doe and their kind. Proof is not invented here either: no vanity totals, no "+12%" on an
@@ -254,30 +307,42 @@ node <skill>/scripts/inspect.mjs --app <url or path/to/index.html>
 ```
 
 A sheet dealt with `--app` switches both tools to the app rules by itself. The inspector opens the
-screen at 1440, 768 and 390 and measures what this chapter asks for: an h1; a sidebar that folds on
-the phone; the canvas used to its right edge; panel shadows and borders; the number of corner radii;
-icons in tinted squares; numeric alignment and tabular figures; chart hues; colour share; placeholder
-data; text under 11px; and the page rules that still hold (contrast, gradients, the banned palettes,
-emoji). Fix every `FAIL`. Treat each `WARN` as wrong unless you can defend it to a designer in one
-sentence.
+screen at 1440, 768 and 390 and measures what this chapter asks for: an h1 (and reports it as the
+screen's hero); a sidebar that folds on the phone; the canvas used to its right edge; panel shadows
+and borders; the number of corner radii; cards in one row that end apart, where a column of cards
+stacked with the gutter counts as one block (`ragged-row`); a blank band inside a card of over 40px,
+or over 64px before a new section's heading (`panel-void`); icons in tinted squares; numeric alignment and tabular figures; chart hues; colour
+share, and a screen with charts but no hue on its data (`no-data-hue`); placeholder data; text under
+11px; and the page rules that still hold (contrast, gradients, the banned palettes, emoji). Fix every
+`FAIL`. Treat each `WARN` as wrong unless you can defend it to a designer in one sentence.
 
-Then look at the screenshots, every width, and answer these in writing:
+Then look at the screenshots, every width, and answer these in writing. This is the critique for an
+app screen: the caps in `critique.md` for pictures, motion and the page's live element are page rules
+and do not apply here.
 
-1. Is the screen's question answered by the biggest thing on it, and is that read first?
+1. Is the screen's question answered by the biggest thing on it, and is that read first? Is the
+   largest figure the one that answers the title row's sentence?
 2. Does every block share the screen's edges? Is there a dead strip on one side, a card stopping
-   short, an orphan cell?
-3. Is colour only on data, on status and on the one primary action?
-4. Do the numbers add up, and do they line up digit for digit?
-5. Does every zero look like a zero and every missing value like a dash?
-6. On the phone, is the navigation folded away, and does each block still answer its question?
+   short, an orphan cell, a stretched card with a blank band (a legend pinned to its foot, four rows
+   in a card kept at its neighbour's height)?
+3. Is colour only on data, on status and on the one primary action, and does the main data element
+   carry the one hue? Does the face you chose show on the first screen?
+4. Do the numbers add up, and do they line up digit for digit? List every fact that appears twice
+   and check that the copies agree; recompute each total and change from the values as displayed;
+   check that every relative figure names what it is against.
+5. Does every zero look like a zero and every missing value like a dash? Does every count badge sit
+   on a queue that needs action, with its noun clear from the label?
+6. Does every legend swatch match the mark it explains, and does any caption have to say which bars
+   are which (then encode it in the chart)? Does any label collide with a line or another label?
+7. On the phone, is the navigation folded away, and does each block still answer its question?
 
 Fix the worst three, inspect again, look again. Three rounds at most. Judge the pictures: if a problem
 shows in a screenshot, it is real, whatever the code says.
 
 ### 2.8 Report
 
-Tell the user, briefly: the style dealt (name and seed) and any redraws with their reasons; each
-screen's one question; any check you allowed and why (for example `--allow icon-chips` for node-type
+Tell the user, briefly: the style dealt (name and seed) and any redraws with their reasons; the face
+you chose and the signature element; each screen's one question; any check you allowed and why (for example `--allow icon-chips` for node-type
 tiles in a builder); and the sample data that must be replaced with real data, listed so it can be
 found.
 
@@ -321,6 +386,9 @@ No screen in the study puts a dark or saturated sidebar against a light canvas (
 - **The product is named** (house rule, from testing). The product's mark and name sit at the top of
   the sidebar or rail, and the scope (workspace, team, project, account) is shown as a switcher or a
   breadcrumb. A screen whose product cannot be named from the screenshot reads as a template.
+- **Counts on nav items** (house rule, from testing). A count appears only on a queue that needs
+  action, and its noun is clear from the label: "Requests 5", "Price changes 3". A bare "Range and
+  prices 9" left the judge asking nine of what.
 - **Labels by default.** A labelled sidebar unless the product has five destinations or fewer and the
   screen needs the width (a research or monitoring view); an icon rail always carries the product's
   mark at the top, a tooltip and an accessible name on every icon. Nav items are other screens, never
@@ -384,9 +452,19 @@ do not stretch a card's frame over empty space.
 **Cards that share a row share a bottom edge.** In testing, rows whose cards stopped 26-190px apart
 were marked down every time, by judges and by the inspector (`ragged-row`). Balance the row by its
 content first: move a list's rows so the two columns hold the same number, cap both lists at the same
-count, or pair blocks of similar height. Only when the contents cannot balance, stack the two blocks,
-or let the shorter card fill the row height with its content top-aligned and the footer action (a
-"View all", a total) pinned to its bottom so the extra height is not a hole.
+count, or pair blocks of similar height. Two cards stacked in one column beside a tall card count as
+one block: they balance when the column ends level. Only when the contents cannot balance, stack the
+two blocks, or let the shorter card fill the row height with its content top-aligned and the footer
+action (a "View all", a total) pinned to its bottom so the extra height is not a hole.
+
+**A stretched card stretches only when it has content to fill.** Only an action or a total may be
+pinned to a stretched card's foot; a legend or a note stays directly under its chart. In testing, a
+cover card stretched to its neighbour with its legend pinned to the bottom left 60px of blank under
+the last row, and a sell-out card left 45px above its links. When the content is short, let the card
+keep its own height (`align-items: start` on the row), move its footer link into its header, or give
+the row a block of similar height. A filtered block shrinks to its rows, or keeps a fixed number of
+rows with one sentence in the empty ones; four rows over 270px of empty card is a hole. The inspector
+warns on a blank band of over 40px inside a card (`panel-void`).
 
 **Narrow blocks do not span the canvas.** A table of five columns or fewer, or a list of six rows or
 fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1300px it leaves
@@ -416,7 +494,8 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
 - **Underline tabs** (8 screens) always sit on a full-width 1px rule; the indicator is 1-4px (median
   2), as wide as the label or running 8-11px past it.
 - **A segmented track** once: 48px, #f3f4f6, a white 36px active pill, and the date select inside its
-  right end, so tabs and range read as one row.
+  right end, so tabs and range read as one row. A segmented control is as wide as its options, and full
+  width only below about 480px: three options spread across a 680px tablet card read as a progress bar.
 - **Control height** in title and filter rows: 28-40px, median 34, clustering at 32 and 36.
 - **Order**: scope on the left (the date first, then the filters), utility and refresh on the right.
 - **Compound filters** that read as a sentence ("Date | Jun 14 - Jul 13 | Daily"), 28px tall and 8px
@@ -442,13 +521,20 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
   over 14, "2 m 24 s", "5 /10".
 - **The answer figure leads.** When one figure is the screen's answer (a balance, net worth, the
   portfolio's value), it is 30-36px and at least 1.3 times its sibling figures (those at 18-24px). In
-  testing, a 24px portfolio value beside two 24px figures left the screen without a lead.
+  testing, a 24px portfolio value beside two 24px figures left the screen without a lead. No other
+  figure on the screen is larger: the biggest number answers the title row's sentence, so a
+  secondary ratio in another card stays at the siblings' size.
 - **One figure, one place.** A figure shown in the strip is not repeated in a legend beside it, and a
   KPI strip whose every cell names a panel below (RSVPs, then an RSVPs panel) is dropped: lead each
   panel with its own number instead.
-- **A second job.** KPIs may be the chart's series tabs (the selected one carries a 2px rule or the
-  active fill, the others a hover state; grey values with no marker read as disabled) or the list's
-  type filter (the selected card takes a 1.5px border).
+- **A second job.** KPIs may be the chart's series tabs or the list's type filter (the selected card
+  takes a 1.5px border). As tabs, the selected one carries a 2px rule or the active fill and an ink
+  label; the others keep a grey label and their value in ink, at 400 against the selected one's 500.
+  A grey value reads as disabled: in testing, three shops' takings set in grey because they were tabs
+  read as secondary, though they were the brief's first ask. When the tabs are the per-entity
+  breakdown the brief asks for, grey nothing and let the rule alone mark the selection. On a phone the
+  tabs become a 2-up grid with the selected cell filled, or a row that scrolls sideways; never an
+  underline floating inside the grid (`app.css` does both).
 
 ### Deltas
 
@@ -484,6 +570,10 @@ fewer, runs to about 760px at 1440 and pairs with the next block; stretched to 1
 | Has it drifted from its target? | One row per part: the current share as a bar with a 1px tick at the target (`Charts.bullet`); never two stacked bars to compare | house rule |
 | Where? | A map with a list beside it; the list carries the magnitudes | 1 |
 | Per period, and the running total? | The two side by side at equal width, with the same dates | 1 |
+| Which way did it flow, and how much? | Columns above and below one zero line on one scale, the axis signed and captioned on each side ("Sold" above, "Bought" below), a marked period in a second tone with its own legend entry (`Charts.diverging`) | house rule |
+| Who is away when? | A timeline of people by day, each kind of booking its own mark (`Charts.timeline`) | house rule |
+| Is there enough cover? | A team-by-day matrix of slack against the minimum (+2, +1, 0, −1), one hue ramping toward the negative colour, the headcount on hover (`Charts.matrix`) | house rule |
+| When in the day, against last time? | One row per item on a shared opening-to-closing axis: a 2px grey track, an ink dot for today, a hollow tick for the comparison day (`Charts.timeStrip`) | house rule |
 
 Three more, from testing:
 
@@ -526,7 +616,9 @@ to 5.2.
 - **Axis text no larger than the data.** 15-16px ticks beside 14px values are flagged as louder than
   the numbers.
 - **X labels**: 4-8 per chart, flat, never rotated (40 degrees is flagged), the first and last pulled
-  inside the plot. Labelling only the two ends hides when things happened. Irregular dates on a
+  inside the plot, on one step all the way: a forced closing label after 14:00 on a 90-minute step
+  left a short last gap that a judge measured. Choose a step that lands on the end (hourly from 08:00
+  to 15:00) or leave the end unlabelled. Labelling only the two ends hides when things happened. Irregular dates on a
   categorical axis are flagged: time goes on a time scale.
 
 ### 6.4 Marks
@@ -541,13 +633,19 @@ to 5.2.
 - **Colour.** One hue per chart. The accent touches only data on 8 screens, and data ink is under 3%
   of the pixels on most. Neutral series are fine and often better: a near-black line that turns pale
   grey after the cursor; a white line against a red one; signs instead of colour ("+$24,000,000").
+  But the one hue, when the style has one, goes on the screen's main data element (today's series,
+  the booked bars, the current period, the margin that breaks), not on a secondary chart or a delta:
+  in testing, an all-ink screen with no hue on any of its data read as a kit.
   One subject keeps one hue across the screen: the same subscribers drawn pink in one chart and indigo
   in the next is flagged. Unrelated hues on one screen (three, five) are flagged every time. Status
   colours are for status. The inspector warns over four hues and fails over six.
 - **Legends.** None for a single series (9 charts): the title or the dropdown names it. Otherwise five
   items at most, as a 5-8px dot with a 12-14px grey label in the card's header, or as a small table
   (dot, name, value, change) that makes the legend carry data. Never list a series that has no data
-  (flagged). The legend dot is the line's colour.
+  (flagged). Every swatch is the mark it explains, scaled down: the legend dot is the line's colour,
+  a hatched bar's swatch is hatched. A swatch drawn separately from the mark drifted from it in testing
+  (a black outline with a red edge explaining a red outline); the helpers return the legend built from
+  the same style object as the marks.
 - **Rings** only for three to five parts of a whole that are not already listed beside them (a ring
   redrawing the spent, due and left figures of the tile next to it was marked redundant). Never
   labelled on the slices; the total sits in the centre or beside the ring. The
@@ -560,8 +658,14 @@ to 5.2.
 - **Annotate the event that matters.** A step or a spike more than about three times the usual change
   gets a 1px marker and a 12px label naming its cause ("Deploy a3f09c1", "Newsletter featured");
   reference lines (a budget, an SLO, a start time) are 1px dashed with their label at the end. In
-  testing, an unexplained jump was the first thing a judge asked about. `Charts.line` and
-  `Charts.bars` take `annotations` and `reference`.
+  testing, an unexplained jump was the first thing a judge asked about. `Charts.line`,
+  `Charts.bars` and `Charts.diverging` take `annotations` and `reference`.
+- **Labels never collide.** Annotation labels sit in rows above the plot, each beside the top of its
+  own leader line, and no leader line runs through another label; the rows are reserved only when a
+  label exists, so a chart without one has no dead band above it. The "Now" label of a forecast goes
+  on whichever side of its line the series does not cross. Lay labels out after the fonts load, or
+  the label set changes between loads (it did in testing). The helpers do all of this; give a label
+  that may not fit a `short` form.
 - **Use the helper, then extend it.** Draw charts with `assets/charts.js` and add what a chart needs to
   it, rather than writing new axis code: in testing, every chart written from scratch on a phone put
   its y labels on top of its line.
@@ -578,7 +682,8 @@ to 5.2.
   (48 + 24, 48 + 32, 50 + 30).
 - Key-value and legend rows inside cards: 21-32px.
 - In a two-line cell, line 2 sits about 21px below line 1 (19-23), one size smaller (12-14px) and
-  grey.
+  grey. Two-line labels need a 40-44px pitch at least: on a 32px pitch a subline nearly touched the
+  next row's name and the list ran together (house rule, from testing).
 - Overview lists show 2-5 rows.
 
 ### 7.2 Header
@@ -589,7 +694,9 @@ to 5.2.
   strongest line in the table (#e5e7eb over #f3f4f6 row rules).
 - Header row 36-40px.
 - Numeric headers are right-aligned and flush with their values; a header that stops 15px short of
-  its column is flagged.
+  its column is flagged. A header over a control aligns with the control it labels (centred over a
+  column of steppers), and a delta beside a stepper gets its own narrow unlabelled column; three
+  alignments in one header row were flagged.
 - A sort glyph on the active column only.
 
 ### 7.3 Dividers
@@ -624,6 +731,12 @@ to 5.2.
 - **IDs** in a monospace at body size, truncated to about 8 characters with an ellipsis and a copy
   icon 12px after.
 - Truncate to one line with an ellipsis; never break inside a word.
+- **A breakdown in a narrow card** ("Headingley 6 · Chapel Allerton 5 · Meanwood 3") goes in fixed
+  mini-columns, or each item is `nowrap` with its separator attached to the next item, so no line ends
+  on a dangling "·".
+- **An edited cell shows that it changed** (house rule, from testing). In an editable grid a changed
+  value carries a mark (a dot, a tinted border), and the column header or a caption names the
+  baseline ("vs the usual Monday"); a bare grey "+5" beside a stepper was read as noise.
 
 ### 7.5 Ink inside rows
 
@@ -685,6 +798,13 @@ list so the text starts on one edge (a 50px slot with the text 16px after it). M
   Planned against spent is a separate 6-8px track under the label (`Charts.plan`).
 - **Bar list**: a 64px pitch, a label line, then a 10px pill bar with the value 5px after its end; the
   longest bar about 88% of the width; one colour, no track.
+- **Inline bars in a list are thin and grey** unless they are the screen's main series: 2-3px at
+  most. A ranked list of money in a narrow card carries a 2px proportional bar under each label, grey
+  with the top item in ink (`Charts.barList(el, rows, { thin: true })`), so "most costly first" is
+  seen and not only read. In testing, six 4px black bars were the loudest marks on the screen.
+- **A timeline draws its comparison.** When the brief asks "against last Sunday", the comparison is a
+  mark on the same axis (`Charts.timeStrip`: an ink dot for today, a hollow tick for the comparison
+  day), not only a line of text.
 - **Legend as table**: dot, name, pill, value and change on a 57px pitch.
 - **Key-value well**: a tinted well, radius 8, 32px rows, label left, figure right.
 - **Feed as row cards**: 63px tall, 8px gaps, radius 14, a fill one step lighter and a border one step
@@ -815,10 +935,15 @@ white with a 1px border; a tertiary is text. The controls in one row share one h
   #222224 on #171719); interactive outlines brighter, #373737-#4c4c4c, so an outlined button reads as
   clickable without a fill.
 - **Text**: #fff; secondary about #aaa (#82848a-#bbb); tertiary about #888. #4c4c4f (about 2:1) is
-  flagged. The house floor of 4.5:1 holds here too.
+  flagged. The house floor of 4.5:1 holds here too. Two greys at most, and far enough apart to read
+  as two: about #b4b4b4 for secondary text and #949494 for meta (in testing, #aaaaaa, #969696 and
+  #bbbbbb on one screen read as one grey used three ways).
 - **Accent** on data only, or on one selected state. Active nav by brightness. Emphasis without
   colour: an inverted white pill, a grey-filled button (#212121), an outline.
-- **Status** as a hue on a dark tint of itself: #3fc07a on #172a1d; #44a282 on #1b2828.
+- **Status** as a hue on a dark tint of itself: #3fc07a on #172a1d; #44a282 on #1b2828. **When the
+  accent is green or yellow-green, `--positive` is the accent** (a lime accent: lime on a dark lime
+  tint), or the sign carries the meaning in neutral ink; a mint "+£3.81" beside a lime "Sold" read as
+  two greens. The same holds on light screens.
 - **Colour share** at or under 3% on all six.
 
 ### 9.4 Surfaces, radius, icons, spacing
@@ -846,8 +971,9 @@ style does not set, with the greys moved to pass 4.5:1.
 
 The names match the sheet `draw.mjs --app` prints and `assets/app.css`, a neutral start set to these
 defaults (shell, title row, panels, the divided KPI strip, tables, pills, controls, tabs, empty states
-and the phone fold). `assets/charts.js` draws the line, bar, ring and bar-list charts of §6 in SVG from
-your data, with these rules built in.
+and the phone fold). `assets/charts.js` draws the charts of §6 in SVG from your data (line, bars,
+diverging columns, ring, bar list, plan, bullet, timeline, cover matrix and time strip), with these
+rules built in and its colours read from these tokens.
 
 ```css
 :root {
@@ -860,7 +986,7 @@ your data, with these rules built in.
   --positive: #247b50;  --pill-positive-bg: #dcfae5;  --pill-positive-ink: #04250e;
   --negative: #c4242a;  --pill-negative-bg: #ffedea;  --pill-negative-ink: #831c1e;
   --pill-warning-bg: #fffbeb;  --pill-warning-ink: #92400e;  /* notice border #fde68a */
-  --grid: #e5e5e5;
+  --grid: #e5e5e5;  --chart-span: 0.06;  /* the opacity of a shaded span in a chart */
 
   --radius-card: 8px;  --radius-control: 6px;  --radius-chip: 4px;  /* soft styles: 20 / 14 / 999 */
   --gap: 16px;  --card-pad: 20px;  --pad: 24px;
@@ -871,11 +997,11 @@ your data, with these rules built in.
 :root[data-theme="dark"] {
   --ground: #000000;  --surface: #111111;  --raised: #222222;  --active: #222222;
   --border: #1a1a1a;  --rule: #161616;     --control: #444444;  /* on a #111 ground the border is #2e2e2e */
-  --text: #ffffff;    --muted: #aaaaaa;    --faint: #969696;
+  --text: #ffffff;    --muted: #b4b4b4;    --faint: #949494;  /* two greys that read apart */
   --primary: #ffffff;                      /* inverted: white fill, black label */
-  --positive: #3fc07a;  --pill-positive-bg: #172a1d;  --pill-positive-ink: #3fc07a;
+  --positive: #3fc07a;  --pill-positive-bg: #172a1d;  --pill-positive-ink: #3fc07a;  /* a green accent replaces these */
   --negative: #e5566f;  --pill-negative-bg: #2c1a20;  --pill-negative-ink: #e5566f;  /* the study's #d4405d, lifted for 4.5:1 */
-  --grid: #2b2b2b;
+  --grid: #2b2b2b;  --chart-span: 0.12;
 }
 .num { font-variant-numeric: tabular-nums; }
 td.num, th.num { text-align: right; }
@@ -909,8 +1035,13 @@ td.num, th.num { text-align: right; }
   "Automate your savings with up to 3.50% APY").
 - **Missing or not applicable** is a grey dash: an em dash, a "-", a 6x2px mark. Never a dash at full
   value size: "--" at 24px reads as loading (flagged).
-- **Counts follow the view.** Counts shown in scope (tabs, KPI tiles, "12 open") are computed from
-  the rows in the current view or filter and recomputed on every switch.
+- **Counts follow the view, and so does the frame.** Counts shown in scope (tabs, KPI tiles, "12
+  open") are computed from the rows in the current view or filter and recomputed on every switch. A
+  filtered block shrinks to its rows and its row-mate aligns to the top, or the block keeps a fixed
+  number of rows with one empty-state sentence; each view's subline is computed for that view.
+- **An empty side card fills with the reference data**, not one dashed box in 400px of white: before
+  anything has sold out, last Sunday's sell-out times as a quiet list under "Nothing has sold out yet
+  today".
 - **Red is a signal, not a texture**: one red mark per object at most, on the overdue or failing fact;
   thirteen red strings on one board read as noise, and a list of deals needing attention does not
   repeat the same flags on the board beside it.
@@ -953,9 +1084,20 @@ takes more than 30% of a phone's width.
   row, never the page. The first list row starts in the top 60% of the phone screen: three rows of
   filter controls above it pushed the list off the first screen in testing.
 - **KPIs**: a divided container becomes a 2-column grid, or a list with the label on the left and the
-  value on the right. Never four squeezed columns.
-- **Charts** go full width, 160-200px tall, with 3-4 x labels and a legend of dots above. The y ticks
-  keep their own lane at the left (or move to the right edge); a tick label never sits on the line.
+  value on the right. Never four squeezed columns. In a 2-column grid the count after any full-width
+  lead is even; otherwise use three narrow columns or a divided list, or let the last cell take the
+  full width (`app.css` does that for an odd count). A lone "Sold 3.18 kWh" beside an empty half-row
+  was flagged.
+- **At most one row of controls above a chart**: an office select and a week switch share one row.
+  Two stacked full-width segmented controls pushed the data down in testing.
+- **Charts** go full width, 160-200px tall, with 3-4 x labels and a legend of dots above, set in a
+  2-column grid (or behind a "Key" disclosure) when it would wrap to three lines. The y ticks keep
+  their own lane at the left (or move to the right edge); a tick label never sits on the line.
+- **Row actions on a phone** are text actions or one compact trailing button, with one filled bulk
+  action for the list ("Approve 3 that fit"); five 44px grey Approve blocks turned a list into a stack
+  of buttons.
+- **When a strip collapses, drop the item least relevant to the screen's main action**, not the last
+  in source order: the live price stays on an energy screen whose plan depends on it.
 - **Tables become lists of two-line rows below about 640px**: the identity and the key number on line
   1, the other fields the brief names in 13px grey on line 2 ("fra1 · 1m 38s"), the one action at the
   right. Fields move to line 2; they are never dropped. A table that must stay a table scrolls inside
@@ -1048,6 +1190,7 @@ Each line sets a habit of generated dashboards against what the 23 screens do in
 | Pagination under a short list | Capped rows and "View all". |
 | An equal four-up grid whatever the data, with orphan cells and stretched cards | A column count chosen by the item count; spans that change by row and land on the same lines. |
 | Neon on dark, glowing borders, glass | True neutral darks, lightness steps, colour on the data. |
+| The kit's own face: Geist or Inter on #f8f8f8 with white 12px cards and no hue on the data, or lime on black | One face taken from the brief (a ground from the product's world, a figure face with character, the brand's hue on the main data element) and one element only this product has. |
 | A coloured icon per category in a list | One grey icon set; colour, if any, on the numbers. |
 | An illustration and "No data yet" in an empty chart | The zero line drawn, and one sentence in the frame. |
 

@@ -25,12 +25,16 @@ const outDir = resolve(String(opt('out', '.taste-skill')));
 const sheetPath = join(outDir, 'direction.json');
 
 const KINDS = Object.keys(LIB.kinds);
-const SCREENS = [...new Set(LIB.patterns.map((p) => p.screen))];
+// signature patterns are elements of one kind of product (a power flow, a sell-out strip), not whole screens
+const SCREENS = [...new Set(LIB.patterns.filter((p) => p.screen).map((p) => p.screen))];
+const SIGNATURES = LIB.patterns.filter((p) => p.signature);
+const signaturesFor = (brief = '') => { const b = brief.toLowerCase(); return SIGNATURES.filter((p) => (p.cues || []).some((c) => new RegExp('(^|[^a-z])' + c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(b))); };
 
 if (opt('list')) {
   const what = opt('list');
   if (what === 'kinds') for (const [k, v] of Object.entries(LIB.kinds)) console.log(`${k.padEnd(14)} ${v.note}`);
   else if (what === 'screens') for (const s of SCREENS) console.log(`${s.padEnd(12)} ${LIB.patterns.filter((p) => p.screen === s).map((p) => p.id).join(', ')}`);
+  else if (what === 'signatures') for (const p of SIGNATURES) console.log(`${p.id.padEnd(16)} ${p.name} — ${(p.cues || []).slice(0, 5).join(', ')}`);
   else for (const s of LIB.styles) console.log(`${s.id.padEnd(22)} ${s.name} — ${s.theme}, ${s.suits.join(', ')}`);
   process.exit(0);
 }
@@ -142,6 +146,19 @@ function render(s) {
   if (st.avoid?.length) p('**Off-style here:** ' + st.avoid.join('; ') + '.');
   if (st.basis) p(`Distilled from ${st.basis}.${st.notes ? ' ' + st.notes : ''}`);
   p();
+  // the style makes a screen correct; its face makes it this product's (references/app-screens.md, §2.3)
+  if (st.identity?.length) {
+    p('**Its face.** Choose one of these (or one of your own of the same weight) before you build, write it in your notes next to');
+    p('the screen\'s question, and check that it shows on the first screen. Without one the screen reads as a well-applied kit.');
+    for (const x of st.identity) p('- ' + x);
+    p();
+  }
+  const sigs = signaturesFor(s.input.brief);
+  if (sigs.length) {
+    p('**Signature elements this brief names** (an element only this kind of product has; build one of them as part of a screen):');
+    for (const g of sigs) p(`- **${g.name}** (\`${g.id}\`). ${g.blueprint}${g.phone ? ' On a phone: ' + g.phone : ''}`);
+    p();
+  }
   const f = t.font || {};
   if (!s.input.keep.includes('palette')) {
     p('## 2. Tokens'); p('```css'); p(':root {');
