@@ -260,8 +260,8 @@ function deal(input, redraws) {
   return s;
 }
 function dealHero(dir, input, exclude) {
-  let pool = L.heroes.filter((h) => (dir.heroes || []).includes(h.id));
-  if (!pool.length) pool = L.heroes.filter((h) => (h.directions || []).includes(dir.id));
+  // the direction's own list, and any hero written for this direction since (the October 2026 study added some)
+  let pool = L.heroes.filter((h) => (dir.heroes || []).includes(h.id) || (h.directions || []).includes(dir.id));
   if (!pool.length) pool = L.heroes;
   if (imageryMode(input) !== 'interface' && !input.have.includes('product-ui')) { const plain = pool.filter((h) => !softwareOnly(h)); if (plain.length) pool = plain; }
   const ok = pool.filter((h) => !exclude.includes(h.id) && (h.needs || []).every((n) => n === 'photography' || input.have.includes(n)));
@@ -410,6 +410,8 @@ function siteCard(s, full) {
   const lines = [`- **${s.name}** (${s.source}, studied score ${s.score}) \`${s.id}\``, `  Idea: ${s.idea}`, `  Hero: ${s.hero}`];
   if (full) {
     lines.push(`  Type: ${s.type}`, `  Colour: ${s.colour}`, `  Imagery: ${s.imagery}`, `  Layout: ${s.layout}`);
+    if (s.media) lines.push(`  Pictures and footage: ${s.media}`);
+    if (s.motion) lines.push(`  Motion: ${s.motion}`);
     for (const sec of s.sections || []) lines.push(`  Section (${sec.role}): ${sec.description}`);
     for (const t of s.steal || []) lines.push(`  Worth taking: ${t}`);
     lines.push(`  URL: ${s.url}`);
@@ -522,7 +524,9 @@ function render(s) {
   }
   p('## Always');
   p('Headlines two lines or fewer at every width. No eyebrow labels, no monospace, no 01/02/03, no thin rules, no gradients, no shadows at rest,');
-  p('no cream-and-terracotta, no violet. `inspect.mjs` measures all of it.');
+  p('no cream-and-terracotta, no violet. The frame: one h1 on the first screen that says what this is, equal outer margins, no');
+  p('section huddled on one side with the other half empty, no blank stretch over half a screen, a heading on every section.');
+  p('`inspect.mjs` measures all of it.');
   if (s.allow?.length) p(`This direction is allowed: ${s.allow.join(', ')} (the inspector reads this from the saved sheet).`);
   p();
   p(`Saved to ${sheetPath.split('\\').join('/')} · reprint with \`node draw.mjs --show\``);
