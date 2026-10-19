@@ -4,6 +4,11 @@ All notable changes to taste-skill live here. The repo follows SemVer-ish discip
 
 ---
 
+## 2.1.2 - 2026-10-19
+
+- **Fix: `design-taste-frontend` did not load in Claude Code** ([#151](https://github.com/Leonxlnx/taste-skill/issues/151)). The description added in 2.1.0 contained an unquoted `: `, so its YAML frontmatter failed to parse and the skill was silently dropped ("Unknown skill"). It is now a folded block scalar.
+- **So it cannot happen again:** `tests/frontmatter.mjs` parses every `SKILL.md` frontmatter (and every `agents/openai.yaml`) with a strict YAML parser, checks names, description length and the plugin manifests, and a GitHub Actions workflow (`check-skills.yml`) runs it, the registry test and a syntax check of the scripts on every push and pull request.
+
 ## 2.1.1 - 2026-10-19
 
 One skill to reach for. Installing the repo no longer means an agent might pick an older skill for the job.
