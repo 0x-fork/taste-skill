@@ -9,7 +9,7 @@
     {
       "name": "taste-skill",
       "description": "tasteskill v2: art direction for websites, product pages, dashboards and app screens, with a library of researched directions, real pictures from open collections and a real-browser inspector.",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "source": "./",
       "skills": ["./skills/taste-skill"],
       "author": {
@@ -24,7 +24,7 @@
     {
       "name": "taste-skill-classics",
       "description": "The classic taste-skill styles and earlier versions (soft, minimalist, brutalist, gpt-taste, Stitch, v1, v2-experimental). Opt-in: each runs only when called by name.",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "source": "./",
       "skills": [
         "./skills/soft-skill",
