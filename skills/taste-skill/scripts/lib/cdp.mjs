@@ -2,7 +2,7 @@
 // Drives an installed Chrome / Edge / Chromium in headless mode over Node's built-in WebSocket.
 // Requires Node 22+. No npm install.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync, readdirSync, statSync, openSync, closeSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,24 +37,6 @@ export function findChrome() {
   return null;
 }
 
-// Profiles from runs that were killed before close(): removed once no Chrome holds them (a running
-// Chrome keeps the profile's lockfile open) and they are a few minutes old.
-function sweepProfiles(base) {
-  try {
-    const cutoff = Date.now() - 3 * 60 * 1000;
-    for (const name of readdirSync(base)) {
-      if (!name.startsWith('ad-chrome-')) continue;
-      const p = join(base, name);
-      try {
-        if (statSync(p).mtimeMs > cutoff) continue;
-        const lock = join(p, 'lockfile');
-        if (existsSync(lock)) closeSync(openSync(lock, 'r+')); // throws while a Chrome holds it
-        rmSync(p, { recursive: true, force: true });
-      } catch {}
-    }
-  } catch {}
-}
-
 export class Browser {
   static async launch({ width = 1440, height = 900, extraArgs = [] } = {}) {
     if (typeof WebSocket === 'undefined') {
@@ -64,10 +46,8 @@ export class Browser {
     if (!exe) {
       throw new Error('No Chrome/Edge/Chromium found. Install one or set CHROME_PATH to its executable.');
     }
-    // A throwaway profile per run. Its cache is capped (each run starts cold anyway), profiles left by
-    // runs that were killed are swept once they are a few hours old, and the profile goes on exit.
+    // Own only this run's profile: age and opening a lockfile do not prove another profile is unused.
     const base = process.env.TASTE_SKILL_TMP || tmpdir();
-    sweepProfiles(base);
     const dir = mkdtempSync(join(base, 'ad-chrome-'));
     // On exit Chrome still holds the profile's files: stop it first, then remove the folder.
     let pid = 0;
